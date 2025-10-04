@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import axios from "axios";
 import bgImage from "../assets/background.jpg";
+import { useProfile } from "../context/ProfileContext";
 
 
 const cardVariants = {
@@ -11,6 +12,8 @@ const cardVariants = {
 };
 
 export default function AccountProfilePage() {
+  const { profile, setProfile } = useProfile();
+
   // State for all form fields
   const [formData, setFormData] = useState({
     fullName: "",
@@ -39,7 +42,8 @@ export default function AccountProfilePage() {
   // Save profile handler
   const handleSaveProfile = async () => {
     try {
-      const res = await axios.post("http://localhost:8081/save-profile", formData);
+      // Save profile data to the backend
+      const res = await axios.post("http://localhost:8081/save-profile", profile);
       alert(res.data.message || "Profile saved successfully!");
     } catch (err) {
       console.error(err);

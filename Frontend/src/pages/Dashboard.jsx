@@ -115,12 +115,16 @@ const Dashboard = () => {
   const profiles = [
     {
       id: 1,
-      name: "Mr RAHUL RAJAK",
+      name: "Profile 1",
       status: "Published",
-      updatedAt: "2nd June 2025",
+      updatedAt: new Date().toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }),
       tagline:
         "Aspiring Full Stack Developer with a Passion for Agri-Tech Innovations",
-      desiredRole: Preferences?.desiredRole || "Full Stack Developer",
+      desiredRole: Preferences?.desiredRole || "Not Added",
       topSkill:
         abilities?.length > 0
           ? `${abilities[0]?.name} (${abilities[0]?.level})`
@@ -333,7 +337,7 @@ const Dashboard = () => {
               [Disabled Preview]
             </div>
             <p className="mt-4 text-sm text-gray-500">Years of Experience: 10–15 years</p>
-            <p className="text-sm text-gray-500">Desired Role: UX Director, Head of UX</p>
+            <p className="mt-4 text-sm text-gray-500">Desired Role: UX Director, Head of UX</p>
             <button
               className="mt-6 px-6 py-3 bg-gray-300 text-white rounded-full cursor-not-allowed"
               disabled

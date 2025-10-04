@@ -97,7 +97,7 @@ app.post("/login", (req, res) => {
 
 // ==================== INFORMATION ====================
 // Endpoint to save account profile data
-app.post('/save-profile', (req, res) => {
+app.post('/signup', (req, res) => {
   const {
     fullName, dob, pronoun, nationality, city, address,
     email, phone, linkedin, portfolio,
