@@ -1,0 +1,27 @@
+[
+  {
+    "text": "Which data structure follows FIFO principle?",
+    "choices": ["Stack", "Queue", "Tree", "Graph"],
+    "correct": "Queue"
+  },
+  {
+    "text": "What is the time complexity of binary search?",
+    "choices": ["O(n)", "O(log n)", "O(n^2)", "O(1)"],
+    "correct": "O(log n)"
+  },
+  {
+    "text": "Which data structure follows LIFO principle?",
+    "choices": ["Queue", "Stack", "Array", "Heap"],
+    "correct": "Stack"
+  },
+  {
+    "text": "What is the maximum number of nodes in a binary tree of height h?",
+    "choices": ["2^h - 1", "h^2", "h!", "2h + 1"],
+    "correct": "2^h - 1"
+  },
+  {
+    "text": "Which traversal technique uses recursion in binary trees?",
+    "choices": ["Inorder", "Breadth First", "Level Order", "Depth First"],
+    "correct": "Inorder"
+  }
+]

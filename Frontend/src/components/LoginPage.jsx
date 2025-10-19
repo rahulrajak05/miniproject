@@ -73,7 +73,9 @@ const LoginPage = () => {
           {/* Right Side */}
           <div className="md:w-1/2 w-full flex items-center justify-center p-8">
             <div className="w-full">
-              <h1 className="text-2xl font-bold text-gray-800 mb-2 text-center">Log in</h1>
+             <h1 className="text-2xl font-bold text-gray-800 mb-2 text-center">
+              Pondicherry University
+              </h1>
               <p className="mb-6 text-gray-600 text-center">Enter your email and password</p>
 
               <form onSubmit={handleLogin} className="space-y-4">

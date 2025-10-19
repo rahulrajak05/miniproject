@@ -12,6 +12,7 @@ import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import AccountProfilePage from "./pages/AccountProfilePage";
 import MyProfile from "./pages/MyProfile";
+import Information from "./pages/information.jsx";
 import EducationSetup from "./pages/EducationSetup";
 import EducationSetup1 from "./pages/EducationSetup1";
 import WorkExperienceStep1 from "./pages/WorkExperienceStep1";
@@ -40,9 +41,7 @@ import Pricing from "./pages/Pricing";
 // import CompanyPage from "./pages/CompanyPage";
 import CodingPage from "./pages/CodingPage";
 import TheoryPage from "./pages/TheoryPage";
-
-
-
+import HRInterview from "./pages/HRInterview";
 // Context
 import { ProfileProvider } from "./context/ProfileContext";
 
@@ -69,20 +68,23 @@ import AIB from './pages/AIB';
 import AII from './pages/AII';
 import AIA from './pages/AIA';
 
-import WDB from './pages/WDB';
-import WDI from './pages/WDI';
-import WDA from './pages/WDA';
 
-import NDB from './pages/NDB';
-import NDI from './pages/NDI';
-import NDA from './pages/NDA';
 
 import MLB from './pages/MLB';
-import MLI from './pages/MLI';
-import MLA from './pages/MLA';
-import LeaderboardPage from "./pages/LeaderboardPage";
+// import WDB from './pages/WDB';
+// import WDI from './pages/WDI';
+// import WDA from './pages/WDA';
+
+// import NDB from './pages/NDB';
+// import NDI from './pages/NDI';
+// import NDA from './pages/NDA';
+
+// import MLB from 'F:/Coder-Gym/gym-project/Frontend/src/pages/MLB.jsx';
+// import MLI from './pages/MLI';
+// import MLA from './pages/MLA';
+// import LeaderboardPage from "./pages/LeaderboardPage";
 import ContestsPage from "./pages/ContestsPage";
-import DashboardPage from "./pages/DashboardPage";
+// import DashboardPage from "./pages/DashboardPage";
 
 const App = () => {
   const location = useLocation();
@@ -104,132 +106,92 @@ const App = () => {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/myaccount" element={<AccountProfilePage />} />
             <Route path="/myprofile" element={<MyProfile />} />
+            
+            {/* <Route path="/dashboardpage" element={<DashboardPage />} /> */}
 
-
-
+               {/* Education */}
+            <Route path="/information" element={<Information />} />
+             {/* <Route path="/myprofile" element={<MyProfile />} /> */}
 
             {/* Education */}
             <Route path="/educationsetup" element={<EducationSetup />} />
             <Route path="/educationsetup1" element={<EducationSetup1 />} />
-
-
-
-
 
             {/* Work Experience */}
             <Route path="/workexperiencestep1" element={<WorkExperienceStep1 />} />
             <Route path="/workexperiencestep2" element={<WorkExperienceStep2 />} />
             <Route path="/workexperiencestep3" element={<WorkExperienceStep3 />} />
 
-
-
-
-
             {/* Learning */}
             <Route path="/learning-step1" element={<LearningSetupStep1 />} />
             <Route path="/learning-step2" element={<LearningSetupStep2 />} />
             <Route path="/learning-edit" element={<EditLearningCourse />} />
-
-
-
 
             {/* Abilities */}
             <Route path="/abilities-step1" element={<SetupAbilitiesStep1 />} />
             <Route path="/abilities-step2" element={<SetupAbilitiesStep2 />} />
             <Route path="/abilities-edit" element={<EditAbilities />} />
 
-
-
-
             {/* Cover Letter */}
             <Route path="/riseon-coverletter" element={<RiseOnCoverLetter />} />
 
-
-
-
             {/* OnScribe */}
             <Route path="/riseon-scribe" element={<RiseOnScribe />} />
-
-
-
 
             {/* Interview */}
             <Route path="/riseon-interview" element={<RiseOnInterview />} />
             {/* <Route path="/companypage" element={<CompanyPage />} /> */}
             <Route path="/codingpage" element={<CodingPage />} />
             <Route path="/theorypage" element={<TheoryPage />} />
-
-            
-            
-
-
-
-
+            <Route path="/hrinterview" element={<HRInterview />} /> 
 
             {/* Job Boards */}
             <Route path="/riseon-job-boards" element={<RiseOnJobBoards />} />
 
-
-
-
-
              {/* Quiz */}
-              <Route path="/leaderboards" element={<LeaderboardPage />} />
-              <Route path="/contests" element={<ContestsPage />} />
-              <Route path="/dashboard" element={<DashboardPage/>} />
 
-
-
-
-
-
-
-
-
+            
+              
             {/* Quiz */}
             <Route path="/riseon-quiz" element={<RiseOnQuiz />} />
             <Route path="/riseon-quiz1" element={<RiseOnQuiz1 />} />
             <Route path="/quiz/java/intermediate" element={<JAVAIN />} />
             <Route path="/quiz/java/advanced" element={<JAVAAD />} />
             <Route path="/riseon-quiz" element={<RiseOnQuiz />} />
-            <Route path="/quiz/java/beginner" element={<RiseOnQuiz1 />} /> {/* 
+            <Route path="/quiz/java/beginner" element={<RiseOnQuiz1 />} /> 
             
-            
-            java-beginner */}
+             //java
             <Route path="/quiz/java/intermediate" element={<JAVAIN />} />
             <Route path="/quiz/java/advanced" element={<JAVAAD />} />
+            <Route path="/quiz/java/beginner" element={<RiseOnQuiz1 />} /> 
 
+              //dsa
             <Route path="/quiz/data-structures/beginner" element={<DSBeginnerQuiz />} />
             <Route path="/quiz/data-structures/intermediate" element={<DSIntermediateQuiz />} />
             <Route path ="/quiz/data-structures/advanced" element={<DSAdvancedQuiz />} /> 
-
+             //os
             <Route path="/quiz/operating-system/beginner" element={<OSBeginnerQuiz />} />
             <Route path="/quiz/operating-system/intermediate" element={<OSIntermediateQuiz />} />
             <Route path="/quiz/operating-system/advanced" element={<OSAdvancedQuiz />} />
+              
 
+             //network
             <Route path="/quiz/networking/beginner" element={<NBeginnerQuiz />} />
             <Route path="/quiz/networking/intermediate" element={<NIntermediateQuiz />} />
             <Route path="/quiz/networking/advanced" element={<NAdvancedQuiz />} />
-
+            
+            //dbms
             <Route path="/quiz/dbms/beginner" element={<DBMSB />} />
             <Route path="/quiz/dbms/intermediate" element={<DBMSI />} />
             <Route path="/quiz/dbms/advanced" element={<DBMSA />} />
 
+            //ai
             <Route path="/quiz/ai/beginner" element={<AIB />} />
             <Route path="/quiz/ai/intermediate" element={<AII />} />
             <Route path="/quiz/ai/advanced" element={<AIA />} />
 
-            <Route path="/quiz/web-development/beginner" element={<WDB />} />
-            <Route path="/quiz/web-development/intermediate" element={<WDI />} />
-            <Route path="/quiz/web-development/advanced" element={<WDA />} />
-
-            <Route path="/quiz/node.js-api-design/beginner" element={<NDB />} />
-            <Route path="/quiz/node.js-api-design/intermediate" element={<NDI />} />
-            <Route path="/quiz/node.js-api-design/advanced" element={<NDA />} />
-
-            <Route path="/quiz/machine-learning-basics/beginner" element={<MLB />} />
-            <Route path="/quiz/machine-learning-basics/intermediate" element={<MLI />} />
-            <Route path="/quiz/machine-learning-basics/advanced" element={<MLA />} />
+            //ML
+            <Route path="/ml/beginner" element={<MLB />} />
         
 
             

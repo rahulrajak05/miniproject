@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { HelpCircle, Search, Filter, Briefcase, DollarSign, MapPin, Code, ChevronLeft } from "lucide-react";
+import Sidebar from "../components/Sidebar";
 
 // Mock API response for demonstration. This expanded data mimics a real API's response.
 const mockApiJobs = [
@@ -538,10 +539,16 @@ const RiseOnJobBoards = () => {
     
 
     <div className="min-h-screen bg-gradient-to-br from-[#f5f5f5] to-[#e3f2fd] py-10 px-4">
+      
       <div className="flex">
         {/* Sidebar */}
         
-        
+        <div className="flex">
+  <Sidebar />
+  <main className="ml-24 sm:ml-28 md:ml-32 lg:ml-40 flex-1 p-6">
+    {/* Your page content here */}
+  </main>
+</div>
 
         {/* Main Content */}
         <div className="flex-1 max-w-6xl mx-auto p-6 space-y-6 bg-white rounded-2xl shadow-md border border-gray-200">

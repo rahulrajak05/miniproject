@@ -70,6 +70,7 @@ const SectionCard = ({ title, icon, onAdd, onDelete, darkHeader = false }) => (
 const MyProfile = () => {
   const navigate = useNavigate();
   const {
+    informationList,
     educationList,
     workList,
     abilities,
@@ -99,6 +100,12 @@ impactful innovations in the agriculture sector.`
   const [phone, setPhone] = useState("8969463558");
   const [Location, setLocation] = useState("Gaya");
   const [yearofExperience, setYearofExperience] = useState("1 year, 1month");
+
+
+
+
+
+
   const handleEdit = () => setIsEditing(true);
   const handleSaveEdit = () => setIsEditing(false);
   const handleCancelEdit = () => setIsEditing(false);
@@ -107,6 +114,9 @@ impactful innovations in the agriculture sector.`
       setIsDeleted(true);
     }
   };
+
+
+
   const handleCopy = () => {
     const profileText =
       `${name}\n${title}\n\n${summary}\n\n` +
@@ -127,6 +137,10 @@ impactful innovations in the agriculture sector.`
 
   const handleAdd = (section) => {
     switch (section) {
+      case "Information":
+        navigate("/information");
+        break;
+     
       case "Education":
         navigate("/educationsetup1");
         break;
@@ -177,170 +191,81 @@ impactful innovations in the agriculture sector.`
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] p-6">
-      <div className="max-w-6xl mx-auto mb-6">
-        <Toolbar />
-      </div>
-
-      {/* Profile Summary */}
-      <div className="max-w-4xl mx-auto bg-white p-8 rounded shadow mb-6">
-        <div className="border border-orange-300 rounded p-6 relative">
-          <div className="absolute top-2 left-2 flex flex-col gap-2">
-            <button
-              onClick={handleEdit}
-              title="Edit"
-              className="text-gray-500 hover:text-black"
-            >
-              ✏️
-            </button>
-            <button
-              onClick={handleAlert}
-              title="Alert"
-              className="text-gray-500 hover:text-black"
-            >
-              ⚠️
-            </button>
-            <button
-              onClick={handleCopy}
-              title="Copy"
-              className="text-gray-500 hover:text-black"
-            >
-              📋
-            </button>
-            <button
-              onClick={handleDeleteProfile}
-              title="Delete"
-              className="text-red-500 hover:text-red-700"
-            >
-              🗑️
-            </button>
-          </div>
-          {copied && (
-            <div className="absolute top-2 right-4 text-sm text-green-600 font-medium">
-              📋 Copied!
-            </div>
-          )}
-
-          <div className="pl-10">
-            {isEditing ? (
-              <>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="text-2xl font-bold mb-1 w-full border rounded px-3 py-2"
-                  placeholder="Full Name"
-                />
-
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="text-gray-800 font-medium mb-2 w-full border rounded px-3 py-2"
-                  placeholder="Professional Title"
-                />
-
-                <textarea
-                  rows="5"
-                  value={summary}
-                  onChange={(e) => setSummary(e.target.value)}
-                  className="text-sm text-gray-700 w-full border rounded px-3 py-2 mb-2"
-                  placeholder="Professional Summary"
-                />
-
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="text-sm text-gray-700 w-full border rounded px-3 py-2 mb-2"
-                  placeholder="Email"
-                />
-
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="text-sm text-gray-700 w-full border rounded px-3 py-2 mb-2"
-                  placeholder="Phone Number"
-                />
-
-                <input
-                  type="text"
-                  value={Location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="text-sm text-gray-700 w-full border rounded px-3 py-2 mb-2"
-                  placeholder="Address / Location"
-                />
-
-                <input
-                  type="text"
-                  value={yearofExperience}
-                  onChange={(e) => setYearofExperience(e.target.value)}
-                  className="text-sm text-gray-700 w-full border rounded px-3 py-2 mb-2"
-                  placeholder="Years of Experience"
-                />
-                <div className="mt-4 flex gap-4">
-                  <button
-                    onClick={handleSaveEdit}
-                    className="bg-blue-900 text-white px-5 py-2 rounded hover:bg-blue-950"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={handleCancelEdit}
-                    className="border border-gray-400 px-5 py-2 rounded hover:bg-gray-100"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <h2 className="text-2xl font-bold mb-1">{name}</h2>
-                <p className="text-gray-800 font-medium mb-2">{title}</p>
-                <p className="text-sm text-gray-700 whitespace-pre-line">
-                  {summary}
-                </p>
-
-                <div className="mt-4 flex flex-wrap items-center gap-8 text-sm text-gray-700">
-                  <span className="flex items-center gap-2">
-                    <FaEnvelope className="text-green-500" /> {email}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <FaPhone className="text-green-500" /> {phone}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <FaMapMarkerAlt className="text-green-500" /> {Location}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <b>YOE:</b>{" "}
-                    <span className="text-gray-800">{yearofExperience}</span>
-                  </span>
-                </div>
-
-                {/* <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-700">
-                  <span className="flex items-center gap-2">
-                    <FaEnvelope className="text-green-500" />{" "}
-                    rahulrajak@gmail.com
-                  </span>
-                  <span className="flex items-center gap-2">
-                  <FaPhone className="text-green-500" /> 8969463558
-                  </span>
-
-
-                  <span className="flex items-center gap-2">
-                    <FaMapMarkerAlt className="text-green-500" /> Gaya
-                  </span>
-                  <span className="ml-auto font-semibold text-sm">
-                    YOE: <span className="text-gray-800">1 year, 1 month</span>
-                  </span>
-                </div> */}
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
       
+      <div className="max-w-6xl mx-auto mb-6">
+        
+      </div>
+      
+
+
+
+
+    
+      
+
+ {/* Information Section */}
+  <div className="max-w-5xl mx-auto p-6">
+  <div className="mb-8 border rounded-lg bg-white shadow-sm">
+    <div className="flex items-center justify-between px-4 py-3 border-b">
+      <div className="flex items-center gap-2 text-xl font-semibold text-gray-800">
+        <FaGraduationCap className="text-2xl" />
+        <span>Information</span>
+      </div>
+      <button
+        onClick={() => handleAdd("Information")}
+        className="border px-4 py-1.5 rounded hover:bg-gray-100 flex items-center gap-1 text-gray-700"
+      >
+        <FiPlus /> Add Instance
+      </button>
+    </div>
+
+    <div className="py-8 px-4">
+      {(!informationList || informationList.length === 0) && (
+        <div className="text-center text-gray-600">
+          <div className="text-6xl text-orange-400 mb-3">🧾</div>
+          <p className="text-md font-medium">No Information Found!</p>
+          <p className="text-xl font-bold mt-1">
+            Get started by adding your personal details.
+          </p>
+        </div>
+      )}
+
+      {informationList && informationList.length > 0 && (
+        <ul>
+  {informationList.map((info, index) => (
+    <li key={index} className="mb-4 border-b pb-4">
+      <div className="font-bold text-lg text-gray-900">{info.fullName || "-"}</div>
+      <div className="text-gray-700">{info.email || "-"}</div>
+      <div className="text-gray-700">{info.phone || "-"}</div>
+      <div className="text-gray-600">{info.address || "-"}</div>
+
+      {info.socialLinks && (
+        <div className="mt-2 flex gap-4">
+          {Object.entries(info.socialLinks).map(([key, link]) =>
+            link ? (
+              <a
+                key={key}
+                href={link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline text-sm"
+              >
+                {key}
+              </a>
+            ) : null
+          )}
+        </div>
+      )}
+    </li>
+  ))}
+</ul>
+
+      )}
+    </div>
+  </div>
+</div>
+
+    
 
       {/* Education Section - Dynamic Rendering -------------------------------------------------------------------------*/}
       <div className="max-w-5xl mx-auto p-6">
@@ -961,7 +886,16 @@ impactful innovations in the agriculture sector.`
             )}
           </div>
         </div>
+        <div className="max-w-6xl mx-auto my-8 text-center">
+  <button
+    onClick={() => navigate("/resume-preview")}
+    className="bg-blue-900 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-950"
+  >
+    Preview Resume
+  </button>
+</div>
       </div>
+      
     </div>
   );
 };

@@ -1,9 +1,17 @@
-// src/pages/
 import React, { useState } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
 import { HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+// Shuffle helper function
+function shuffleArray(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
 const DUMMY_QUESTIONS = [
   {
@@ -63,15 +71,15 @@ const DUMMY_QUESTIONS = [
   },
 ];
 
-
-
-
 const MLB = () => {
   const navigate = useNavigate();
+
+  // Shuffle questions once on mount
+  const [questions] = useState(() => shuffleArray(DUMMY_QUESTIONS));
+
+  // Update answers array length according to shuffled questions
+  const [answers, setAnswers] = useState(Array(questions.length).fill(null));
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState(
-    Array(DUMMY_QUESTIONS.length).fill(null)
-  );
 
   const handleSelect = (choice) => {
     const newAnswers = [...answers];
@@ -80,10 +88,11 @@ const MLB = () => {
   };
 
   const goNext = () => {
-    if (currentIndex < DUMMY_QUESTIONS.length - 1) {
+    if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
   };
+
   const goPrev = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
@@ -92,10 +101,10 @@ const MLB = () => {
 
   const handleSubmit = () => {
     let right = 0;
-    DUMMY_QUESTIONS.forEach((q, idx) => {
+    questions.forEach((q, idx) => {
       if (answers[idx] === q.correct) right += 1;
     });
-    const wrong = DUMMY_QUESTIONS.length - right;
+    const wrong = questions.length - right;
 
     alert(`Quiz Results:\n✔️ Correct: ${right}\n❌ Wrong: ${wrong}`);
   };
@@ -112,7 +121,7 @@ const MLB = () => {
         </button>
 
         <h2 className="text-2xl font-bold flex items-center gap-2">
-          RiseON Quiz <HelpCircle size={18} className="text-blue-400" />
+          Quiz Machine Learning - Beginner Quiz
         </h2>
 
         {/* Question Asked */}
@@ -120,14 +129,14 @@ const MLB = () => {
           <label className="block font-medium">Question Asked</label>
           <div className="border rounded p-4 bg-gray-50">
             <strong>Q{currentIndex + 1}:</strong>{' '}
-            {DUMMY_QUESTIONS[currentIndex].text}
+            {questions[currentIndex].text}
           </div>
         </div>
 
         {/* Choices */}
         <div className="space-y-3">
           <label className="block font-medium">Select one of the following</label>
-          {DUMMY_QUESTIONS[currentIndex].choices.map((choice, i) => (
+          {questions[currentIndex].choices.map((choice, i) => (
             <div key={i} className="border rounded p-3 flex items-center">
               <input
                 type="radio"
@@ -156,9 +165,9 @@ const MLB = () => {
           </button>
           <button
             onClick={goNext}
-            disabled={currentIndex === DUMMY_QUESTIONS.length - 1}
+            disabled={currentIndex === questions.length - 1}
             className={`px-4 py-2 rounded ${
-              currentIndex === DUMMY_QUESTIONS.length - 1
+              currentIndex === questions.length - 1
                 ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                 : 'bg-gray-800 text-white hover:bg-gray-700'
             }`}
@@ -172,11 +181,11 @@ const MLB = () => {
       <div className="w-full md:w-64 bg-white p-6 rounded shadow flex flex-col justify-between">
         <div>
           <h3 className="flex items-center gap-2 font-semibold mb-4">
-            Questions <HelpCircle size={16} className="text-blue-400" />
+            Questions 
           </h3>
 
           <div className="grid grid-cols-3 gap-3 mb-6">
-            {DUMMY_QUESTIONS.map((_, idx) => {
+            {questions.map((_, idx) => {
               const status =
                 answers[idx] === null
                   ? currentIndex === idx

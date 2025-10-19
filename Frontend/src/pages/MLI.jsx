@@ -166,7 +166,7 @@ const MLI = () => {
       <div className="w-full md:w-64 bg-white p-6 rounded shadow flex flex-col justify-between">
         <div>
           <h3 className="flex items-center gap-2 font-semibold mb-4">
-            Questions <HelpCircle size={16} className="text-blue-400" />
+           Machine Learning - Intermediate Quiz
           </h3>
 
           <div className="grid grid-cols-3 gap-3 mb-6">

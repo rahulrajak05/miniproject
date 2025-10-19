@@ -106,7 +106,7 @@ const MLA = () => {
         </button>
 
         <h2 className="text-2xl font-bold flex items-center gap-2">
-          RiseON Quiz <HelpCircle size={18} className="text-blue-400" />
+          MAchine Learning - Advanced Quiz
         </h2>
 
         {/* Question Asked */}
@@ -166,7 +166,7 @@ const MLA = () => {
       <div className="w-full md:w-64 bg-white p-6 rounded shadow flex flex-col justify-between">
         <div>
           <h3 className="flex items-center gap-2 font-semibold mb-4">
-            Questions <HelpCircle size={16} className="text-blue-400" />
+            Questions 
           </h3>
 
           <div className="grid grid-cols-3 gap-3 mb-6">

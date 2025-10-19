@@ -4,7 +4,12 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import bgImage from "../assets/background.jpg";
 import { useProfile } from "../context/ProfileContext";
-
+import resume from "../assets/resume.png";
+import letter from "../assets/letter.png";
+import interview from "../assets/interview.png";
+import job from "../assets/job.png";
+import quiz from "../assets/quiz.png";
+import pro from "../assets/profile.png";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 40 },
@@ -42,12 +47,11 @@ export default function AccountProfilePage() {
   // Save profile handler
   const handleSaveProfile = async () => {
     try {
-      // Save profile data to the backend
-      const res = await axios.post("http://localhost:8081/save-profile", profile);
-      alert(res.data.message || "Profile saved successfully!");
+        const res = await axios.post("http://localhost:8081/save-profile", formData);
+        alert(res.data.message || "Profile saved successfully!");
     } catch (err) {
-      console.error(err);
-      alert("Error saving profile");
+        console.error("Error saving profile:", err.response?.data || err);
+        alert("Error saving profile");
     }
   };
 
@@ -58,19 +62,64 @@ export default function AccountProfilePage() {
 
       
       {/* Sidebar */}
-      <aside className="w-64 min-h-screen bg-gradient-to-b from-blue-500 to-indigo-700 shadow-xl text-white p-6 border-r border-indigo-800">
-        <h2 className="text-3xl font-bold mb-10">Resume</h2>
-        <nav className="space-y-6 text-lg font-semibold">
-          <Link to="/myaccount" className="block text-yellow-300 font-bold underline">Profile</Link>
-          <Link to="/dashboard" className="block text-white/80 hover:text-yellow-300 hover:underline transition-all duration-300">Resume</Link>
-          <Link to="/riseon-coverletter" className="block text-white/80 hover:text-yellow-300 hover:underline transition-all duration-300">Forwarding letter</Link>
-          <Link to="/riseon-interview" className="block text-white/80 hover:text-yellow-300 hover:underline transition-all duration-300">Interview</Link>
-          <Link to="/riseon-job-boards" className="block text-white/80 hover:text-yellow-300 hover:underline transition-all duration-300">Job Portals</Link>
-          <Link to="/riseon-quiz" className="block text-white/80 hover:text-yellow-300 hover:underline transition-all duration-300">Quiz</Link>
-          <span className="block text-white/50">Counsellor (Coming Soon)</span>
-        </nav>
-      </aside>
-
+      <aside className="w-28 md:w-32 lg:w-40 min-h-screen bg-gradient-to-b from-gray-900 to-gray-700 shadow-xl text-white p-4 md:p-6 border-r border-gray-600 flex flex-col items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold mb-6 text-yellow-300 text-center">
+                  
+                </h2>
+                <nav className="space-y-6 text-center">
+                  <Link
+                    to="/myaccount"
+                    className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
+                  >
+                    <img src={pro} alt="Profile" className="w-10 h-10 rounded-full mb-1" />
+                    <span className="text-xs">Account</span>
+                  </Link>
+      
+                  <Link
+                    to="/dashboard"
+                    className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
+                  >
+                    <img src={resume} alt="resume" className="w-10 h-10 rounded-full mb-1" />
+                    <span className="text-xs">Dashboard</span>
+                  </Link>
+      
+                  <Link
+                    to="/riseon-coverletter"
+                    className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
+                  >
+                    <img src={letter} alt="letter" className="w-10 h-10 rounded-full mb-1" />
+                    <span className="text-xs">Letter</span>
+                  </Link>
+      
+                  <Link
+                    to="/riseon-interview"
+                    className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
+                  >
+                    <img src={interview} alt="interview" className="w-10 h-10 rounded-full mb-1" />
+                    <span className="text-xs">Interview</span>
+                  </Link>
+      
+                  <Link
+                    to="/riseon-job-boards"
+                    className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
+                  >
+                    <img src={job} alt="job" className="w-10 h-10 rounded-full mb-1" />
+                    <span className="text-xs">Jobs</span>
+                  </Link>
+      
+                  <Link
+                    to="/riseon-quiz"
+                    className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
+                  >
+                    <img src={quiz} alt="quiz" className="w-10 h-10 rounded-full mb-1" />
+                    <span className="text-xs">Quiz</span>
+                  </Link>
+                </nav>
+              </div>
+      
+              {/* <div className="text-xs text-white/60 mt-6">© 2025</div> */}
+            </aside>
       {/* Main Content */}
       <motion.main className="flex-1 p-6 md:p-14" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
         {/* Personal Details */}

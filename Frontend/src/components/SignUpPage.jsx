@@ -90,7 +90,10 @@ const SignUpPage = () => {
           <div className="md:w-1/2 w-full flex items-center justify-center p-8">
             <div className="w-full">
               <h1 className="text-2xl font-bold text-gray-800 mb-2 text-center">
-                Register / Sign Up
+              Pondicherry University
+              </h1>
+              <h1 className="text-2xl font-bold text-gray-800 mb-2 text-center">
+                {/* Register / Sign Up */}
               </h1>
               <p className="mb-6 text-gray-600 font-medium text-center">
                 Welcome! Please enter your details.
