@@ -535,82 +535,95 @@ const RiseOnJobBoards = () => {
     }
   };
 
-  return (
-    
+ return (
+  <div className="min-h-screen bg-gradient-to-br from-[#f5f5f5] to-[#e3f2fd] flex">
+    {/* Sidebar */}
+    <Sidebar />
 
-    <div className="min-h-screen bg-gradient-to-br from-[#f5f5f5] to-[#e3f2fd] py-10 px-4">
-      
-      <div className="flex">
-        {/* Sidebar */}
-        
-        <div className="flex">
-  <Sidebar />
-  <main className="ml-24 sm:ml-28 md:ml-32 lg:ml-40 flex-1 p-6">
-    {/* Your page content here */}
-  </main>
+    {/* Main Content Area */}
+    
+    
+<main className="flex-1 ml-2 sm:ml-4 md:ml-6 lg:ml-8 xl:ml-10 px-3 sm:px-6 md:px-10 py-10 flex justify-center items-start bg-gradient-to-br from-[#f9fafb] to-[#f0f4f8] min-h-screen">
+
+  {/* 🔹 University Heading Section */}
+  {/* 🔹 University Heading Section */}
+<div className="absolute top-20 left-1/2 transform -translate-x-[38%] text-center">
+  <h2 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-orange-600 via-pink-600 to-blue-600 text-transparent bg-clip-text drop-shadow-sm">
+    Pondicherry University
+  </h2>
+  <p className="text-xl md:text-2xl text-gray-700 font-medium mt-3 tracking-wide">
+    Department of Computer Science
+  </p>
+  <div className="mt-2 h-1 w-32 bg-gradient-to-r from-orange-500 to-yellow-400 mx-auto rounded-full"></div>
 </div>
 
-        {/* Main Content */}
-        <div className="flex-1 max-w-6xl mx-auto p-6 space-y-6 bg-white rounded-2xl shadow-md border border-gray-200">
-          <h1 className="text-3xl font-bold flex items-center gap-2 text-gray-800">
-            Job Boards
-            {/* <HelpCircle className="text-blue-500" size={22} /> */}
-          </h1>
 
-          {/* Profile Selector */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Select Profile <span className="text-red-500">*</span>
-            </label>
-            <select
-              className="w-full border border-orange-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
-              value={profile}
-              onChange={(e) => setProfile(e.target.value)}
-            >
-              <option value="" disabled>Select Profile</option>
-              <optgroup label="Software Engineering">
-                <option>Junior Software Engineer</option>
-                <option>Senior Software Engineer</option>
-                <option>Full Stack Developer</option>
-                <option>MERN Stack Developer</option>
-                <option>Frontend Developer</option>
-                <option>Backend Developer</option>
-              </optgroup>
-              <optgroup label="Data & Analytics">
-                <option>Data Analyst</option>
-                <option>Data Scientist</option>
-                <option>Machine Learning Engineer</option>
-              </optgroup>
-              <optgroup label="Cloud & DevOps">
-                <option>DevOps Engineer</option>
-                <option>Cloud Architect</option>
-                <option>Site Reliability Engineer (SRE)</option>
-              </optgroup>
-              <optgroup label="Cybersecurity">
-                <option>Cybersecurity Analyst</option>
-                <option>Penetration Tester</option>
-                <option>Security Engineer</option>
-              </optgroup>
-              <optgroup label="Management & Leadership">
-                <option>Product Manager</option>
-                <option>IT Manager</option>
-                <option>IT Director</option>
-                <option>VP of Engineering</option>
-              </optgroup>
-              <optgroup label="Design">
-                <option>UI/UX Designer</option>
-                <option>Graphic Designer</option>
-              </optgroup>
-            </select>
-            <p className="text-xs text-gray-500 mt-1">Please select your profile.</p>
-          </div>
 
-          {/* Render the appropriate view based on state */}
-          {renderContent()}
-        </div>
-      </div>
+
+  {/* 🔸 Main Card */}
+  <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl border border-gray-200 p-8 mt-44 space-y-8">
+    
+    {/* Header */}
+    <h1 className="text-3xl font-bold flex items-center gap-2 text-gray-800">
+      Job Boards
+    </h1>
+
+    {/* Profile Selector */}
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Select Profile <span className="text-red-500">*</span>
+      </label>
+      <select
+        className="w-full border border-orange-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+        value={profile}
+        onChange={(e) => setProfile(e.target.value)}
+      >
+        <option value="" disabled>Select Profile</option>
+        <optgroup label="Software Engineering">
+          <option>Junior Software Engineer</option>
+          <option>Senior Software Engineer</option>
+          <option>Full Stack Developer</option>
+          <option>MERN Stack Developer</option>
+          <option>Frontend Developer</option>
+          <option>Backend Developer</option>
+        </optgroup>
+        <optgroup label="Data & Analytics">
+          <option>Data Analyst</option>
+          <option>Data Scientist</option>
+          <option>Machine Learning Engineer</option>
+        </optgroup>
+        <optgroup label="Cloud & DevOps">
+          <option>DevOps Engineer</option>
+          <option>Cloud Architect</option>
+          <option>Site Reliability Engineer (SRE)</option>
+        </optgroup>
+        <optgroup label="Cybersecurity">
+          <option>Cybersecurity Analyst</option>
+          <option>Penetration Tester</option>
+          <option>Security Engineer</option>
+        </optgroup>
+        <optgroup label="Management & Leadership">
+          <option>Product Manager</option>
+          <option>IT Manager</option>
+          <option>IT Director</option>
+          <option>VP of Engineering</option>
+        </optgroup>
+        <optgroup label="Design">
+          <option>UI/UX Designer</option>
+          <option>Graphic Designer</option>
+        </optgroup>
+      </select>
+      <p className="text-xs text-gray-500 mt-1">Please select your profile.</p>
     </div>
-  );
+
+    {/* Main Content Rendering */}
+    {renderContent()}
+  </div>
+</main>
+
+  </div>
+);
+
 };
 
 export default RiseOnJobBoards;

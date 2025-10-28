@@ -42,6 +42,9 @@ import Pricing from "./pages/Pricing";
 import CodingPage from "./pages/CodingPage";
 import TheoryPage from "./pages/TheoryPage";
 import HRInterview from "./pages/HRInterview";
+import Quizlogin from "./pages/QuizLogin";
+import QuizHome from "./pages/QuizHome";
+import QuizStart from "./pages/QuizStart";
 // Context
 import { ProfileProvider } from "./context/ProfileContext";
 
@@ -67,6 +70,7 @@ import DBMSA from './pages/DBMSA';
 import AIB from './pages/AIB';
 import AII from './pages/AII';
 import AIA from './pages/AIA';
+
 
 
 
@@ -150,8 +154,9 @@ const App = () => {
 
              {/* Quiz */}
 
-            
-              
+            <Route path="/quiz-login" element={<Quizlogin />} />
+            <Route path="/quiz-home" element={<QuizHome />} />
+            <Route path="/quiz-start" element={<QuizStart />} />
             {/* Quiz */}
             <Route path="/riseon-quiz" element={<RiseOnQuiz />} />
             <Route path="/riseon-quiz1" element={<RiseOnQuiz1 />} />

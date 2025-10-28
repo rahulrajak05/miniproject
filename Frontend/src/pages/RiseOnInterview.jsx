@@ -7,7 +7,7 @@ import letter from "../assets/letter.png";
 import interview from "../assets/interview.png";
 import job from "../assets/job.png";
 import quiz from "../assets/quiz.png";
-
+import logo from "../assets/logo.png";
 const cardVariants = {
   hidden: { y: 40, opacity: 0 },
   visible: { y: 0, opacity: 1, transition: { duration: 0.7 } },
@@ -64,67 +64,86 @@ export default function CompanyPage() {
   return (
     <main className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <aside className="w-28 md:w-32 lg:w-40 min-h-screen bg-gradient-to-b from-gray-900 to-gray-700 shadow-xl text-white p-4 md:p-6 border-r border-gray-600 flex flex-col items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold mb-6 text-yellow-300 text-center">
-                  
-                </h2>
-                <nav className="space-y-6 text-center">
-                  <Link
-                    to="/myaccount"
-                    className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-                  >
-                    <img src={profile} alt="Profile" className="w-10 h-10 rounded-full mb-1" />
-                    <span className="text-xs">Account</span>
-                  </Link>
-      
-                  <Link
-                    to="/dashboard"
-                    className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-                  >
-                    <img src={resume} alt="resume" className="w-10 h-10 rounded-full mb-1" />
-                    <span className="text-xs">Dashboard</span>
-                  </Link>
-      
-                  <Link
-                    to="/riseon-coverletter"
-                    className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-                  >
-                    <img src={letter} alt="letter" className="w-10 h-10 rounded-full mb-1" />
-                    <span className="text-xs">Letter</span>
-                  </Link>
-      
-                  <Link
-                    to="/riseon-interview"
-                    className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-                  >
-                    <img src={interview} alt="interview" className="w-10 h-10 rounded-full mb-1" />
-                    <span className="text-xs">Interview</span>
-                  </Link>
-      
-                  <Link
-                    to="/riseon-job-boards"
-                    className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-                  >
-                    <img src={job} alt="job" className="w-10 h-10 rounded-full mb-1" />
-                    <span className="text-xs">Jobs</span>
-                  </Link>
-      
-                  <Link
-                    to="/riseon-quiz"
-                    className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-                  >
-                    <img src={quiz} alt="quiz" className="w-10 h-10 rounded-full mb-1" />
-                    <span className="text-xs">Quiz</span>
-                  </Link>
-                </nav>
-              </div>
-      
-              {/* <div className="text-xs text-white/60 mt-6">© 2025</div> */}
-            </aside>
+     {/* Sidebar */}
+<aside className="w-28 md:w-32 lg:w-40 min-h-screen bg-gradient-to-b from-gray-900 to-gray-700 shadow-xl text-white p-4 md:p-6 border-r border-gray-600 flex flex-col items-center">
+  
+  {/* 🔹 Top Section with Logo */}
+  <div className="flex flex-col items-center gap-2 mb-6">
+    <img
+      src={logo} // 🧩 your university logo
+      alt="University Logo"
+      className="w-14 h-14 md:w-16 md:h-16 object-contain rounded-full shadow-md"
+    />
+    <h1 className="text-lg font-bold text-yellow-300 tracking-wide">PU</h1>
+  </div>
+
+  {/* 🔹 Navigation (Right Below PU) */}
+  <nav className="flex-1 space-y-6 text-center mt-2">
+    <Link
+      to="/myaccount"
+      className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
+    >
+      <img src={profile} alt="Profile" className="w-10 h-10 rounded-full mb-1" />
+      <span className="text-xs">Account</span>
+    </Link>
+
+    <Link
+      to="/dashboard"
+      className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
+    >
+      <img src={resume} alt="resume" className="w-10 h-10 rounded-full mb-1" />
+      <span className="text-xs">Dashboard</span>
+    </Link>
+
+    <Link
+      to="/riseon-coverletter"
+      className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
+    >
+      <img src={letter} alt="letter" className="w-10 h-10 rounded-full mb-1" />
+      <span className="text-xs">Letter</span>
+    </Link>
+
+    <Link
+      to="/riseon-interview"
+      className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
+    >
+      <img src={interview} alt="interview" className="w-10 h-10 rounded-full mb-1" />
+      <span className="text-xs">Interview</span>
+    </Link>
+
+    <Link
+      to="/riseon-job-boards"
+      className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
+    >
+      <img src={job} alt="job" className="w-10 h-10 rounded-full mb-1" />
+      <span className="text-xs">Jobs</span>
+    </Link>
+
+    <Link
+      to="/riseon-quiz"
+      className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
+    >
+      <img src={quiz} alt="quiz" className="w-10 h-10 rounded-full mb-1" />
+      <span className="text-xs">Quiz</span>
+    </Link>
+  </nav>
+</aside>
+
 
       {/* Main Content */}
       <div className="flex-1 p-8">
+
+        {/* 🔹 University Heading Section */}
+<div className="text-center mb-12">
+  <h2 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-orange-600 via-pink-600 to-blue-600 text-transparent bg-clip-text drop-shadow-sm">
+    Pondicherry University
+  </h2>
+  <p className="text-xl md:text-2xl text-gray-700 font-medium mt-3 tracking-wide">
+    Department of Computer Science
+  </p>
+  <div className="mt-2 h-1 w-32 bg-gradient-to-r from-orange-500 to-yellow-400 mx-auto rounded-full"></div>
+</div>
+
         <motion.h1
           className="text-3xl font-bold text-center text-orange-600 mb-8"
           initial="hidden"

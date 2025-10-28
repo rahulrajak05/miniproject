@@ -30,7 +30,7 @@ const LoginPage = () => {
       const response = await axios.post("http://localhost:8081/login", formData);
 
       if (response.status === 200) {
-        alert("✅ Login successful!");
+        alert("Login successful!");
         navigate("/dashboard");
       }
     } catch (err) {

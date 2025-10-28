@@ -7,12 +7,12 @@ const HeroSection = () => {
   return (
     <>
     <section >
-  <img 
-    src={resume11} 
-    alt="RiseON Logo" 
-    // style={{ height: '150px', margin: '0 auto' }} 
-  />
-</section>
+        <img 
+          src={resume11} 
+          alt="RiseON Logo" 
+          // style={{ height: '150px', margin: '0 auto' }} 
+        />
+    </section>
 
     </>
   );

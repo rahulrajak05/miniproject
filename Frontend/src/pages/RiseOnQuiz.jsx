@@ -1,246 +1,148 @@
-// src/pages/RiseOnQuiz.jsx
-import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom"; // ✅ Added Link import
+import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom";
+import logo from "../assets/logo.png";
 
-// Import your images
-import profile from "../assets/profile.png";
-import resume from "../assets/resume.png";
-import letter from "../assets/letter.png";
-import interview from "../assets/interview.png";
-import job from "../assets/job.png";
-import quiz from "../assets/quiz.png";
-
-const RiseOnQuiz = () => {
+const Registration = () => {
   const navigate = useNavigate();
-  const [topic, setTopic] = useState("");
-  const [subtopic, setSubtopic] = useState("");
-  const [difficulty, setDifficulty] = useState("");
-  const [quoteIndex, setQuoteIndex] = useState(0);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const quotes = [
-    "“Learning never exhausts the mind.” – Leonardo da Vinci",
-    "“Push yourself, because no one else is going to do it for you.”",
-    "“Success doesn’t come from what you do occasionally, but what you do consistently.”",
-    "“Don’t just study for exams — study for knowledge.”",
-  ];
-
-  const topicsWithSubtopics = {
-    "Data Structures": ["Queue", "Stack", "Linked List", "Tree", "Graph", "Heap"],
-    "Java": ["OOP Concepts", "Collections", "Multithreading", "Exception Handling"],
-    "Operating System": ["Processes", "Memory Management", "Scheduling", "Deadlock"],
-    "Networking": ["TCP/IP", "ARP", "DNS", "Routing"],
-    "DBMS": ["SQL Queries", "Normalization", "Transactions", "Joins"],
-    "AI": ["Search", "Machine Learning", "Expert Systems", "Logic"],
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setQuoteIndex((prev) => (prev + 1) % quotes.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
 
-  const handleStart = () => {
-    if (!topic || !subtopic || !difficulty) {
-      alert("Please fill all fields before starting the quiz.");
+    const { name, email, password, confirmPassword } = formData;
+
+    if (!name || !email || !password || !confirmPassword) {
+      setError("All fields are required.");
       return;
     }
-    // Navigate with topic, subtopic, and difficulty
-    const path = `/quiz/${topic.toLowerCase().replace(/\s+/g, "-")}/${subtopic
-      .toLowerCase()
-      .replace(/\s+/g, "-")}/${difficulty.toLowerCase()}`;
-    navigate(path);
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    try {
+      // ✅ Connect to backend (port 8081)
+      const response = await fetch("http://localhost:8081/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.message || "Registration failed");
+
+      setSuccess("Registration successful! Redirecting...");
+      setTimeout(() => navigate("/quiz-login"), 2000);
+    } catch (err) {
+      setError(err.message || "Something went wrong.");
+    }
   };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-tr from-indigo-200 via-purple-200 to-pink-200">
-      {/* ================= SIDEBAR ================= */}
-      <aside className="w-28 md:w-32 lg:w-40 min-h-screen bg-gradient-to-b from-gray-900 to-gray-700 shadow-xl text-white p-4 md:p-6 border-r border-gray-600 flex flex-col items-center justify-between">
-        <div>
-          <nav className="space-y-6 text-center">
-            <Link
-              to="/myaccount"
-              className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-            >
-              <img src={profile} alt="Profile" className="w-10 h-10 rounded-full mb-1" />
-              <span className="text-xs">Account</span>
-            </Link>
-
-            <Link
-              to="/dashboard"
-              className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-            >
-              <img src={resume} alt="resume" className="w-10 h-10 rounded-full mb-1" />
-              <span className="text-xs">Dashboard</span>
-            </Link>
-
-            <Link
-              to="/riseon-coverletter"
-              className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-            >
-              <img src={letter} alt="letter" className="w-10 h-10 rounded-full mb-1" />
-              <span className="text-xs">Letter</span>
-            </Link>
-
-            <Link
-              to="/riseon-interview"
-              className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-            >
-              <img src={interview} alt="interview" className="w-10 h-10 rounded-full mb-1" />
-              <span className="text-xs">Interview</span>
-            </Link>
-
-            <Link
-              to="/riseon-job-boards"
-              className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-            >
-              <img src={job} alt="job" className="w-10 h-10 rounded-full mb-1" />
-              <span className="text-xs">Jobs</span>
-            </Link>
-
-            <Link
-              to="/riseon-quiz"
-              className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-            >
-              <img src={quiz} alt="quiz" className="w-10 h-10 rounded-full mb-1" />
-              <span className="text-xs">Quiz</span>
-            </Link>
-          </nav>
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-tr from-indigo-100 via-purple-100 to-pink-100 px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="flex flex-col md:flex-row bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden max-w-4xl w-full"
+      >
+        {/* LEFT SIDE */}
+        <div className="flex flex-col justify-center items-center md:w-1/2 bg-gradient-to-b from-gray-900 to-gray-700 text-white p-8">
+          <motion.img
+            src={logo}
+            alt="University Logo"
+            className="w-28 h-28 mb-4 rounded-full shadow-lg"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          />
+          <h1 className="text-3xl font-bold text-center">Pondicherry University</h1>
+          <p className="mt-3 text-gray-300 text-center text-sm">
+            Empowering students to rise higher — join our community of innovators and achievers.
+          </p>
         </div>
-      </aside>
 
-      {/* ================= MAIN CONTENT ================= */}
-      <div className="flex-1 flex flex-col">
-        {/* HERO SECTION */}
-        <section
-          className="relative flex flex-col items-center justify-center text-center py-20 px-6 overflow-hidden"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1605379399642-870262d3d051?auto=format&fit=crop&w=1470&q=80')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        >
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
-            className="relative z-10"
-          >
-            <h1 className="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg">
-              Quiz Platform
-            </h1>
-            <p className="text-lg text-gray-100 mt-4 max-w-2xl mx-auto leading-relaxed">
-              Challenge your knowledge, sharpen your skills, and rise above your limits.
-            </p>
+        {/* RIGHT SIDE */}
+        <div className="flex-1 flex flex-col justify-center p-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-center text-indigo-700 mb-6">
+            Create Your Account
+          </h1>
+
+          {error && <p className="text-red-500 text-center text-sm font-semibold mb-4">{error}</p>}
+          {success && <p className="text-green-600 text-center text-sm font-semibold mb-4">{success}</p>}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <input
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              value={formData.name}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            />
+
+            <input
+              type="email"
+              name="email"
+              placeholder="Email Address"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            />
+
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            />
+
+            <input
+              type="password"
+              name="confirmPassword"
+              placeholder="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            />
+
             <motion.button
-              onClick={() => window.scrollTo({ top: 800, behavior: "smooth" })}
               whileHover={{ scale: 1.05 }}
-              className="mt-8 bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-8 py-3 rounded-full font-semibold shadow-lg transition-transform"
+              type="submit"
+              className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-semibold py-2 rounded-full shadow-md mt-2"
             >
-              Start Learning
+              Register
             </motion.button>
-          </motion.div>
-          <motion.p
-            key={quoteIndex}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="absolute bottom-8 text-white/90 italic text-sm md:text-base"
-          >
-            {quotes[quoteIndex]}
-          </motion.p>
-        </section>
+          </form>
 
-        {/* QUIZ SELECTION SECTION */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="flex-grow flex items-center justify-center px-4 py-16"
-        >
-          <div className="w-full max-w-xl bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-10 space-y-8 border border-gray-200">
-            <h2 className="text-3xl font-bold text-center text-indigo-700">Take Your Quiz</h2>
-            <p className="text-gray-600 text-center text-sm">
-              Choose a topic, subtopic, and difficulty level to begin.
-            </p>
-
-            {/* Topic Selection */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Select a Topic <span className="text-red-500">*</span>
-              </label>
-              <select
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-                value={topic}
-                onChange={(e) => {
-                  setTopic(e.target.value);
-                  setSubtopic(""); // reset subtopic when topic changes
-                }}
-              >
-                <option value="">Select a Topic</option>
-                {Object.keys(topicsWithSubtopics).map((t) => (
-                  <option key={t}>{t}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Subtopic Selection */}
-            {topic && (
-              <div>
-                <label className="block text-sm font-semibold text-gray-800 mb-2">
-                  Select a Subtopic <span className="text-red-500">*</span>
-                </label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-                  value={subtopic}
-                  onChange={(e) => setSubtopic(e.target.value)}
-                >
-                  <option value="">Select a Subtopic</option>
-                  {topicsWithSubtopics[topic].map((sub) => (
-                    <option key={sub}>{sub}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* Difficulty Selection */}
-            {subtopic && (
-              <div>
-                <label className="block text-sm font-semibold text-gray-800 mb-2">
-                  Difficulty Level <span className="text-red-500">*</span>
-                </label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-                  value={difficulty}
-                  onChange={(e) => setDifficulty(e.target.value)}
-                >
-                  <option value="">Select Difficulty</option>
-                  <option>Beginner</option>
-                  <option>Intermediate</option>
-                  <option>Advanced</option>
-                </select>
-              </div>
-            )}
-
-            <div className="pt-4 text-center">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                onClick={handleStart}
-                className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-8 py-3 rounded-full font-semibold shadow-lg transition-transform"
-              >
-                Start Quiz
-              </motion.button>
-              <p className="text-xs text-gray-500 mt-2">Ready to rise above your limits?</p>
-            </div>
-          </div>
-        </motion.div>
-      </div>
+          <p className="text-center text-gray-600 text-sm mt-4">
+            Already have an account?{" "}
+            <Link to="/quiz-login" className="text-indigo-600 font-medium hover:underline">
+              Login here
+            </Link>
+          </p>
+        </div>
+      </motion.div>
     </div>
   );
 };
 
-export default RiseOnQuiz;
+export default Registration;

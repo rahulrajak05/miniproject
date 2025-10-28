@@ -1,0 +1,15 @@
+[
+  {
+    "id": 1,
+    "topic": "Data Structures",
+    "subtopic": "Binary Trees",
+    "questions": [
+      {
+        "id": 1,
+        "text": "What is the height of a balanced binary tree with 7 nodes?",
+        "choices": ["2", "3", "4", "5"],
+        "correct": "3"
+      }
+    ]
+  }
+]

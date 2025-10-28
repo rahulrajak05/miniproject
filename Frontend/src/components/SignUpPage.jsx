@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
 import logo from "../assets/logo.png";
-import bgImage from "../assets/background.jpg"; // background image path
+import bgImage from "../assets/background.jpg"; 
 import axios from "axios";
 
 const SignUpPage = () => {
@@ -42,12 +42,12 @@ const SignUpPage = () => {
 });
 
       if (response.status === 200) {
-        window.alert("✅ Sign up successful! Please login to continue.");
+        window.alert("Sign up successful! Please login to continue.");
         navigate("/login");
       }
     } catch (error) {
       console.error("Error during sign-up:", error);
-      window.alert("❌ Sign up failed. Please try again.");
+      window.alert("Sign up failed. Please try again.");
     }
   };
 
