@@ -212,9 +212,7 @@ export default function RiseOnInterview() {
               animate="visible"
               variants={titleVariants}
             >
-              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                <Building size={32} />
-              </div>
+              
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold">{companyId} Interview Preparation</h1>
                 <p className="text-lg opacity-90">Master your interview skills with comprehensive preparation</p>

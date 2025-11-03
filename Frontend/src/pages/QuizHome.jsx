@@ -8,7 +8,7 @@ const QuizHome = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("quiz");
   const [leaderboard, setLeaderboard] = useState([]);
-  const [myTop, setMyTop] = useState(null);
+  // Removed unused myTop state for cleanliness
   const [topic, setTopic] = useState("");
   const [subtopic, setSubtopic] = useState("");
   const [customTopic, setCustomTopic] = useState("");
@@ -17,6 +17,7 @@ const QuizHome = () => {
   const [loadingStatus, setLoadingStatus] = useState("");
   const [progress, setProgress] = useState(0);
   const [loginEmail, setLoginEmail] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
 
   // User profile state
   const [user, setUser] = useState({
@@ -139,6 +140,7 @@ const QuizHome = () => {
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     setMessage("⏳ Saving profile...");
+    setSavingProfile(true);
 
     try {
       // Always use the logged-in email to save profile
@@ -180,6 +182,9 @@ const QuizHome = () => {
     } catch (err) {
       console.error(err);
       setMessage("⚠️ Server not reachable");
+    }
+    finally {
+      setSavingProfile(false);
     }
   };
 
@@ -492,10 +497,10 @@ const QuizHome = () => {
   return (
     <div className="min-h-screen bg-gradient-to-tr from-indigo-100 via-purple-100 to-pink-100 pt-20 md:pt-24 lg:pt-28">
       {/* ===== MAIN CONTENT ===== */}
-      <div className="p-8">
+      <div className="p-8" aria-busy={loading ? "true" : "false"}>
         {/* Local tabs for this page */}
         <div className="w-full max-w-5xl mx-auto mb-6">
-          <div className="bg-white/80 backdrop-blur-sm border rounded-2xl p-2 flex flex-wrap gap-2">
+          <div className="bg-white/80 backdrop-blur-sm border rounded-2xl p-2 flex flex-wrap gap-2" role="tablist" aria-label="Quiz home sections">
             {[
               { id: "user", label: "User Profile" },
               { id: "quiz", label: "Quiz" },
@@ -512,6 +517,10 @@ const QuizHome = () => {
                     ? "bg-indigo-600 text-white shadow"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                aria-controls={`panel-${tab.id}`}
+                id={`tab-${tab.id}`}
               >
                 {tab.label}
               </button>
@@ -528,122 +537,391 @@ const QuizHome = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3 }}
-              className="bg-white rounded-3xl shadow-lg p-10 mx-auto w-full max-w-2xl text-center mt-8"
+              className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 mx-auto w-full max-w-5xl mt-8"
+              role="tabpanel"
+              id="panel-user"
+              aria-labelledby="tab-user"
             >
-              <div className="mb-10">
-                <h2 className="text-3xl font-bold text-indigo-700 mb-2">
-                  Pondicherry University
-                </h2>
-                <h3 className="text-xl font-semibold text-indigo-600 mb-4">
-                  Department of Computer Science
-                </h3>
-                <h4 className="text-2xl font-bold text-gray-800 border-b-2 border-indigo-300 pb-2">
-                  User Profile
-                </h4>
+              {/* Enhanced Header Section */}
+              <div className="text-center mb-10 border-b border-gray-100 pb-8">
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="relative">
+                   
+                   
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold text-gray-800 mb-2">User Profile</h2>
+                    <p className="text-gray-600 max-w-md mx-auto">Manage your personal information and academic details for a personalized experience</p>
+                  </div>
+                </div>
               </div>
 
               {!user.saved ? (
-                <form onSubmit={handleSaveProfile} className="space-y-5 text-left">
-                  {["name", "email", "department", "course", "session"].map(
-                    (field) => (
-                      <div key={field}>
-                        <label className="block text-gray-700 font-medium mb-1 capitalize">
-                          {field}
-                        </label>
-                        <input
-                          type={field === "email" ? "email" : "text"}
-                          value={user[field]}
-                          onChange={(e) =>
-                            setUser((prev) => ({
-                              ...prev,
-                              [field]: e.target.value,
-                            }))
-                          }
-                          required={field === "name" || field === "email"}
-                          className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
-                        />
+                /* Enhanced Profile Form */
+                <div className="max-w-3xl mx-auto">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 mb-8"
+                  >
+                    <div className="flex items-start space-x-4">
+                      <div className="flex-shrink-0">
+                        <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
                       </div>
-                    )
-                  )}
+                      <div>
+                        <h3 className="text-lg font-semibold text-blue-800 mb-1">Complete Your Profile</h3>
+                        <p className="text-blue-700 text-sm leading-relaxed">
+                          Please fill in your details to create a comprehensive profile. This information helps us provide personalized quiz recommendations and track your academic progress.
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
 
-                  <div>
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Profile Image
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () =>
-                            setUser((prev) => ({
-                              ...prev,
-                              image: reader.result,
-                            }));
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                      className="w-full border rounded-lg px-3 py-2"
-                    />
-                  </div>
+                  <form onSubmit={handleSaveProfile} className="space-y-8">
+                    {/* Personal Information Section */}
+                    <div className="bg-gray-50 rounded-2xl p-6">
+                      <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                        <svg className="w-5 h-5 mr-3 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Personal Information
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Name Field */}
+                        <div className="lg:col-span-2">
+                          <label className="flex items-center text-sm font-semibold text-gray-700 mb-3" htmlFor="full-name">
+                            <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            Full Name <span className="text-red-500 ml-1">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            id="full-name"
+                            value={user.name}
+                            onChange={(e) => setUser(prev => ({ ...prev, name: e.target.value }))
+                            }
+                            required
+                            placeholder="Enter your complete name as per university records"
+                            className="w-full border-2 border-gray-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all duration-200 bg-white shadow-sm"
+                          />
+                        </div>
 
-                  {message && (
-                    <p className="text-center text-indigo-600 font-medium">
-                      {message}
-                    </p>
-                  )}
+                        {/* Email Field */}
+                        <div className="lg:col-span-2">
+                          <label className="flex items-center text-sm font-semibold text-gray-700 mb-3" htmlFor="email-address">
+                            <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                            </svg>
+                            Email Address <span className="text-red-500 ml-1">*</span>
+                          </label>
+                          <input
+                            type="email"
+                            id="email-address"
+                            value={user.email}
+                            onChange={(e) => setUser(prev => ({ ...prev, email: e.target.value }))
+                            }
+                            required
+                            placeholder="Enter your institutional or personal email"
+                            className="w-full border-2 border-gray-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all duration-200 bg-white shadow-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
 
-                  <button
-                    type="submit"
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition"
-                  >
-                    Save Profile
-                  </button>
-                </form>
-              ) : (
-                <div className="text-gray-700 space-y-4">
-                  <div className="flex flex-col items-center mb-6">
-                    {user.image && (
-                      <img
-                        src={user.image}
-                        alt="Profile"
-                        className="w-28 h-28 rounded-full object-cover shadow-md mb-3"
-                      />
+                    {/* Academic Information Section */}
+                    <div className="bg-gray-50 rounded-2xl p-6">
+                      <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                        <svg className="w-5 h-5 mr-3 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                        </svg>
+                        Academic Details
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Department Field */}
+                        <div>
+                          <label className="flex items-center text-sm font-semibold text-gray-700 mb-3" htmlFor="department">
+                            <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            Department
+                          </label>
+                          <input
+                            type="text"
+                            id="department"
+                            value={user.department}
+                            onChange={(e) => setUser(prev => ({ ...prev, department: e.target.value }))
+                            }
+                            placeholder="Computer Science"
+                            className="w-full border-2 border-gray-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all duration-200 bg-white shadow-sm"
+                          />
+                        </div>
+
+                        {/* Course Field */}
+                        <div>
+                          <label className="flex items-center text-sm font-semibold text-gray-700 mb-3" htmlFor="course">
+                            <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                            Course/Program
+                          </label>
+                          <input
+                            type="text"
+                            id="course"
+                            value={user.course}
+                            onChange={(e) => setUser(prev => ({ ...prev, course: e.target.value }))
+                            }
+                            placeholder="B.Tech, M.Tech, MCA"
+                            className="w-full border-2 border-gray-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all duration-200 bg-white shadow-sm"
+                          />
+                        </div>
+
+                        {/* Session Field */}
+                        <div>
+                          <label className="flex items-center text-sm font-semibold text-gray-700 mb-3" htmlFor="academic-year">
+                            <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            Academic Year
+                          </label>
+                          <input
+                            type="text"
+                            id="academic-year"
+                            value={user.session}
+                            onChange={(e) => setUser(prev => ({ ...prev, session: e.target.value }))
+                            }
+                            placeholder="2024-2025"
+                            className="w-full border-2 border-gray-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all duration-200 bg-white shadow-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Profile Image Section */}
+                    <div className="bg-gray-50 rounded-2xl p-6">
+                      <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                        <svg className="w-5 h-5 mr-3 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Profile Picture
+                      </h3>
+                      
+                      <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
+                        {/* Current Image Preview */}
+                        <div className="flex-shrink-0">
+                          {user.image ? (
+                            <img 
+                              src={user.image} 
+                              alt={user.name ? `${user.name} profile photo` : "Profile Preview"} 
+                              className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-lg" 
+                            />
+                          ) : (
+                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-gray-600 text-2xl font-bold border-4 border-gray-200 shadow-lg">
+                              {user.name ? user.name.charAt(0).toUpperCase() : '📷'}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Upload Input */}
+                        <div className="flex-1 w-full">
+                          <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-white hover:bg-gray-50 transition-colors duration-200" htmlFor="profile-image-input">
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              <svg className="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                              </svg>
+                              <p className="mb-2 text-sm text-gray-500">
+                                <span className="font-semibold">Click to upload</span> or drag and drop
+                              </p>
+                              <p className="text-xs text-gray-500">PNG, JPG or GIF (MAX. 5MB)</p>
+                            </div>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                  if (file.size > 5 * 1024 * 1024) {
+                                    alert('File size should be less than 5MB');
+                                    return;
+                                  }
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => setUser(prev => ({ ...prev, image: reader.result }));
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                              className="hidden"
+                              id="profile-image-input"
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Status Message */}
+                    {message && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`p-4 rounded-xl text-center font-medium border ${
+                          message.includes('✅') 
+                            ? 'bg-green-50 text-green-700 border-green-200' 
+                            : message.includes('❌') 
+                            ? 'bg-red-50 text-red-700 border-red-200'
+                            : 'bg-blue-50 text-blue-700 border-blue-200'
+                        }`}
+                      >
+                        {message}
+                      </motion.div>
                     )}
-                    <h3 className="text-xl font-semibold text-indigo-700">
-                      {user.name}
-                    </h3>
-                  </div>
-                  <div className="text-left space-y-1">
-                    <p>
-                      <strong>Email:</strong> {user.email}
-                    </p>
-                    <p>
-                      <strong>Department:</strong> {user.department}
-                    </p>
-                    <p>
-                      <strong>Course:</strong> {user.course}
-                    </p>
-                    <p>
-                      <strong>Session:</strong> {user.session}
-                    </p>
+
+                    {/* Submit Button */}
+                    <div className="pt-6">
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        type="submit"
+                        className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl shadow-xl transition-all duration-200 flex items-center justify-center space-x-3 text-lg disabled:opacity-60"
+                        disabled={savingProfile}
+                        aria-busy={savingProfile}
+                      >
+                        {savingProfile ? (
+                          <>
+                            <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 12a8 8 0 018-8v3m0 10v3a8 8 0 010-16" />
+                            </svg>
+                            <span>Saving...</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Save Profile Information</span>
+                          </>
+                        )}
+                      </motion.button>
+                    </div>
+                  </form>
+                </div>
+              ) : (
+                /* Enhanced Profile Display */
+                <div className="max-w-4xl mx-auto">
+                  {/* Profile Header Card */}
+                  <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-3xl p-8 border border-indigo-100 shadow-lg mb-8">
+                    <div className="flex flex-col lg:flex-row items-center space-y-6 lg:space-y-0 lg:space-x-8">
+                      {/* Profile Image */}
+                      <div className="flex-shrink-0">
+                        {user.image ? (
+                          <div className="relative">
+                            <img
+                              src={user.image}
+                              alt={user.name ? `${user.name} profile photo` : "Profile"}
+                              className="w-36 h-36 rounded-full object-cover shadow-xl border-4 border-white"
+                            />
+                            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-white flex items-center justify-center">
+                              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="w-36 h-36 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white text-5xl font-bold shadow-xl border-4 border-white">
+                            {user.name ? user.name.charAt(0).toUpperCase() : '👤'}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Profile Info */}
+                      <div className="flex-1 text-center lg:text-left">
+                        <div className="mb-6">
+                          <h3 className="text-4xl font-bold text-gray-800 mb-2">{user.name}</h3>
+                          <p className="text-indigo-600 font-medium text-lg mb-1">{user.email}</p>
+                          <div className="flex items-center justify-center lg:justify-start text-sm text-gray-500">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Profile completed
+                          </div>
+                        </div>
+                        
+                        {/* Academic Info Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          {user.department && (
+                            <div className="bg-white rounded-lg p-4 shadow-md">
+                              <div className="flex items-center justify-center lg:justify-start space-x-2 mb-1">
+                                <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                                <span className="text-xs text-gray-500 font-medium">DEPARTMENT</span>
+                              </div>
+                              <p className="text-sm font-semibold text-gray-800">{user.department}</p>
+                            </div>
+                          )}
+                          
+                          {user.course && (
+                            <div className="bg-white rounded-lg p-4 shadow-md">
+                              <div className="flex items-center justify-center lg:justify-start space-x-2 mb-1">
+                                <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                                <span className="text-xs text-gray-500 font-medium">PROGRAM</span>
+                              </div>
+                              <p className="text-sm font-semibold text-gray-800">{user.course}</p>
+                            </div>
+                          )}
+                          
+                          {user.session && (
+                            <div className="bg-white rounded-lg p-4 shadow-md">
+                              <div className="flex items-center justify-center lg:justify-start space-x-2 mb-1">
+                                <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span className="text-xs text-gray-500 font-medium">ACADEMIC YEAR</span>
+                              </div>
+                              <p className="text-sm font-semibold text-gray-800">{user.session}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  <button
-                    onClick={() => {
-                      const updatedUser = { ...user, saved: false };
-                      setUser(updatedUser);
-                      localStorage.setItem(
-                        "userProfile",
-                        JSON.stringify(updatedUser)
-                      );
-                    }}
-                    className="mt-6 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition"
-                  >
-                    Edit Profile
-                  </button>
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        const updatedUser = { ...user, saved: false };
+                        setUser(updatedUser);
+                        localStorage.setItem("userProfile", JSON.stringify(updatedUser));
+                      }}
+                      className="bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-8 rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      <span>Edit Profile</span>
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setActiveTab("quiz")}
+                      className="bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span>Start Quiz</span>
+                    </motion.button>
+                  </div>
                 </div>
               )}
             </motion.div>
@@ -658,6 +936,9 @@ const QuizHome = () => {
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3 }}
               className="bg-white rounded-3xl shadow-lg p-8 max-w-4xl mx-auto mt-8"
+              role="tabpanel"
+              id="panel-quiz"
+              aria-labelledby="tab-quiz"
             >
               <div className="text-center mb-10">
                 <h2 className="text-3xl font-bold text-indigo-700 mb-2">
@@ -676,7 +957,7 @@ const QuizHome = () => {
                   >
                     {/* Topic Selection */}
                     <div>
-                      <label className="block text-gray-700 font-semibold mb-3">
+                      <label className="block text-gray-700 font-semibold mb-3" htmlFor="main-topic">
                         Select Main Topic
                       </label>
                       <select
@@ -687,6 +968,8 @@ const QuizHome = () => {
                           setCustomTopic("");
                         }}
                         className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all"
+                        id="main-topic"
+                        aria-describedby="topic-help"
                       >
                         <option value="">-- Choose a Topic --</option>
                         {topicSuggestions.map((t) => (
@@ -695,6 +978,7 @@ const QuizHome = () => {
                           </option>
                         ))}
                       </select>
+                      <p id="topic-help" className="mt-2 text-sm text-gray-500">You can also enter a custom topic below.</p>
                     </div>
 
                     {/* Subtopic Selection */}
@@ -704,13 +988,14 @@ const QuizHome = () => {
                         animate={{ opacity: 1, height: "auto" }}
                         transition={{ duration: 0.3 }}
                       >
-                        <label className="block text-gray-700 font-semibold mb-3">
+                        <label className="block text-gray-700 font-semibold mb-3" htmlFor="sub-topic">
                           Select Subtopic (Optional)
                         </label>
                         <select
                           value={subtopic}
                           onChange={(e) => setSubtopic(e.target.value)}
                           className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all"
+                          id="sub-topic"
                         >
                           <option value="">-- All Subtopics --</option>
                           {subtopicMap[topic].map((st) => (
@@ -721,6 +1006,29 @@ const QuizHome = () => {
                         </select>
                       </motion.div>
                     )}
+
+                    {/* Custom Topic Input */}
+                    <div>
+                      <label className="block text-gray-700 font-semibold mb-3" htmlFor="custom-topic">
+                        Or enter a custom topic
+                      </label>
+                      <input
+                        type="text"
+                        id="custom-topic"
+                        value={customTopic}
+                        onChange={(e) => {
+                          setCustomTopic(e.target.value);
+                          if (e.target.value) {
+                            setTopic("");
+                            setSubtopic("");
+                          }
+                        }}
+                        placeholder="e.g., GraphQL, System Design, Kubernetes Networking"
+                        className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all"
+                        aria-label="Custom topic"
+                      />
+                      <p className="mt-2 text-sm text-gray-500">If you type a custom topic, the main topic selection above will be cleared.</p>
+                    </div>
 
                     {/* Generate Button */}
                     <motion.button
@@ -776,6 +1084,7 @@ const QuizHome = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="space-y-4"
+                      aria-live="polite"
                     >
                       <p className="text-xl font-semibold text-gray-700">
                         {loadingStatus}
@@ -816,6 +1125,9 @@ const QuizHome = () => {
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3 }}
               className="flex flex-col items-center justify-center min-h-[80vh] p-6 mt-8"
+              role="tabpanel"
+              id="panel-leaderboard"
+              aria-labelledby="tab-leaderboard"
             >
               <div className="text-center mb-10">
                 <h2 className="text-3xl font-bold text-indigo-700 mb-2">
@@ -857,7 +1169,7 @@ const QuizHome = () => {
                                 : ""
                             }`}
                           >
-                            <td className="py-2 px-4">{user.name || " "}</td>
+                            <td className="py-2 px-4">{entry.name || user.name || "Anonymous"}</td>
                             <td className="py-2 px-4">
                               {entry.score} / {entry.total}
                             </td>

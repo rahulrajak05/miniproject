@@ -643,7 +643,7 @@ const RiseOnJobBoards = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold flex items-center justify-center gap-3 text-gray-800 mb-4">
-              <Briefcase className="text-blue-600" size={36} />
+              {/* <Briefcase className="text-blue-600" size={36} /> */}
               Job Boards
             </h1>
             <p className="text-gray-600 text-lg">Find your dream job with our comprehensive job search platform</p>

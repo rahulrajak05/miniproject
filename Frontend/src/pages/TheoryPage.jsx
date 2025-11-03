@@ -213,9 +213,7 @@ export default function TheoryPage() {
           {/* Card Header */}
           <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-8 text-white">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                <BookOpen size={32} />
-              </div>
+              
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold">{companyId} Theory Questions</h1>
                 <p className="text-lg opacity-90">Master theoretical concepts and interview questions</p>

@@ -177,9 +177,7 @@ ${senderEmail}`;
           {/* Card Header */}
           <div className="bg-gradient-to-r from-orange-500 to-pink-500 p-8 text-white">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                <FileText size={32} />
-              </div>
+             
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold">Cover Letter Generator</h1>
                 <p className="text-lg opacity-90">Create professional cover letters in minutes</p>
