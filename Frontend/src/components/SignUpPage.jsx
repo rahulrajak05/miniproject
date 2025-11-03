@@ -55,7 +55,7 @@ const SignUpPage = () => {
     <>
       <Navbar />
       <div
-        className="flex items-center justify-center min-h-screen px-4"
+        className="flex items-center justify-center min-h-screen px-4 pt-20 md:pt-24"
         style={{
           backgroundImage: `url(${bgImage})`,
           backgroundSize: "cover",

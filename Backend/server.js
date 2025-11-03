@@ -3,7 +3,6 @@ const mysql = require("mysql");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const fs = require("fs");
-;
 
 const app = express();
 app.use(cors());
@@ -81,46 +80,121 @@ app.post("/login", (req, res) => {
       if (!isPasswordValid)
         return res.status(401).json({ message: "Invalid credentials." });
 
-      res.status(200).json({ message: "Login successful!" });
+      res.status(200).json({ message: "Login successful!", email: email });
     } catch (error) {
       console.error("Password comparison error:", error);
       res.status(500).json({ message: "Server error during login." });
     }
   });
 });
-// ==================== PROFILE SAVE API ====================
-app.post('/save-profile', (req, res) => {
-    const {
-        fullName, dob, pronoun, nationality, city, address,
-        email, phone, linkedin, portfolio,
-        education, university, graduationYear,
-        technicalSkills, softSkills
-    } = req.body;
 
-    if (!fullName || !dob || !email)
-        return res.status(400).json({ message: "Full Name, Date of Birth, and Email are required." });
-
-    const sql = `INSERT INTO user_profiles 
-        (fullName, dob, pronoun, nationality, city, address,
-        email, phone, linkedin, portfolio,
-        education, university, graduationYear,
-        technicalSkills, softSkills)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-    const values = [
-        fullName, dob, pronoun, nationality, city, address,
-        email, phone, linkedin, portfolio,
-        education, university, graduationYear,
-        technicalSkills, softSkills
-    ];
-
-    db.query(sql, values, (err) => {
-        if (err) {
-            console.error("DB Insert Error:", err);
-            return res.status(500).json({ message: "Database error" });
-        }
-        res.status(200).json({ message: "Profile saved successfully!" });
+// ==================== GET PROFILE BY EMAIL ====================
+app.get('/get-profile/:email', (req, res) => {
+  try {
+    const { email } = req.params;
+    
+    const sql = 'SELECT * FROM user_profiles WHERE email = ?';
+    db.query(sql, [email], (err, results) => {
+      if (err) {
+        console.error('Error fetching profile:', err);
+        return res.status(500).json({ success: false, message: 'Server error' });
+      }
+      
+      if (results.length > 0) {
+        res.json({
+          success: true,
+          profile: results[0]
+        });
+      } else {
+        res.json({
+          success: false,
+          message: 'Profile not found'
+        });
+      }
     });
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ==================== SAVE/UPDATE PROFILE API ====================
+app.post('/save-profile', (req, res) => {
+  try {
+    const profileData = req.body;
+    const { email } = profileData;
+    
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    // Check if profile exists
+    const checkSql = 'SELECT * FROM user_profiles WHERE email = ?';
+    db.query(checkSql, [email], (err, results) => {
+      if (err) {
+        console.error('Error checking profile:', err);
+        return res.status(500).json({ success: false, message: 'Database error' });
+      }
+
+      if (results.length > 0) {
+        // Update existing profile
+        const updateSql = `UPDATE user_profiles SET 
+         fullName = ?, dob = ?, pronoun = ?, nationality = ?, 
+         city = ?, address = ?, phone = ?, linkedin = ?, 
+         portfolio = ?, education = ?, university = ?, 
+         graduationYear = ?, technicalSkills = ?, softSkills = ?
+         WHERE email = ?`;
+        
+        const updateValues = [
+          profileData.fullName, profileData.dob, profileData.pronoun,
+          profileData.nationality, profileData.city, profileData.address,
+          profileData.phone, profileData.linkedin, profileData.portfolio,
+          profileData.education, profileData.university, profileData.graduationYear,
+          profileData.technicalSkills, profileData.softSkills, email
+        ];
+
+        db.query(updateSql, updateValues, (updateErr) => {
+          if (updateErr) {
+            console.error('Error updating profile:', updateErr);
+            return res.status(500).json({ success: false, message: 'Error updating profile' });
+          }
+          res.json({
+            success: true,
+            message: 'Profile updated successfully!'
+          });
+        });
+      } else {
+        // Insert new profile
+        const insertSql = `INSERT INTO user_profiles 
+         (email, fullName, dob, pronoun, nationality, city, address, 
+          phone, linkedin, portfolio, education, university, graduationYear, 
+          technicalSkills, softSkills) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        
+        const insertValues = [
+          email, profileData.fullName, profileData.dob, profileData.pronoun,
+          profileData.nationality, profileData.city, profileData.address,
+          profileData.phone, profileData.linkedin, profileData.portfolio,
+          profileData.education, profileData.university, profileData.graduationYear,
+          profileData.technicalSkills, profileData.softSkills
+        ];
+
+        db.query(insertSql, insertValues, (insertErr) => {
+          if (insertErr) {
+            console.error('Error inserting profile:', insertErr);
+            return res.status(500).json({ success: false, message: 'Error saving profile' });
+          }
+          res.json({
+            success: true,
+            message: 'Profile saved successfully!'
+          });
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Error saving profile:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 });
 
 // ==================== PROFILE SAVE / UPDATE API ====================
@@ -205,7 +279,6 @@ app.post("/api/register", (req, res) => {
   });
 });
 
-
 // ==================== QUIZ LOGIN API ====================
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
@@ -237,7 +310,6 @@ app.post("/api/login", (req, res) => {
     }
   });
 });
-
 
 // ==================== START SERVER ====================
 const PORT = 8081;

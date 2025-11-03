@@ -8,7 +8,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="flex items-center justify-between px-6 py-4 bg-white shadow-sm">
+  <nav className="flex items-center justify-between px-6 py-4 bg-white shadow-sm fixed w-full top-0 left-0 z-50">
         {/* Logo and Company Name */}
         <div className="flex items-center space-x-3">
           <img
@@ -16,9 +16,14 @@ const Navbar = () => {
             alt="logo"
             width="70"
           />
-          <span className="text-3xl font-bold text-[#0B2C47]">
-            Placement Guidance Resume
-          </span>
+          <div className="flex flex-col">
+            <span className="text-3xl font-bold text-[#0B2C47]">
+              NEXTSTEP
+            </span>
+            <span className="text-sm text-[#0B2C47]">
+              Your Pathway to Career Success
+            </span>
+          </div>
         </div>
 
         {/* Navigation Links */}

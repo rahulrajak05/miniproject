@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { ChevronDown, HelpCircle, Gem, Download } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom"; // ✅ added for Sidebar links
+import { ChevronDown, Download, FileText, User, Mail, Building, Briefcase } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import bgImage from "../assets/background.jpg"; 
 import pro from "../assets/profile.png";
 import resume from "../assets/resume.png";
@@ -10,6 +11,10 @@ import job from "../assets/job.png";
 import quiz from "../assets/quiz.png";
 import logo from "../assets/logo.png";
 
+const cardVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7 } }
+};
 
 const RiseOnCoverLetter = () => {
   const navigate = useNavigate();
@@ -21,8 +26,17 @@ const RiseOnCoverLetter = () => {
   const [jobDescription, setJobDescription] = useState("");
   const [touched, setTouched] = useState({});
   const [coverLetter, setCoverLetter] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const isInvalid = (field) => !field && touched[field];
+
+  // Load user data from localStorage on component mount
+  useEffect(() => {
+    const userEmail = localStorage.getItem('userEmail');
+    if (userEmail) {
+      setSenderEmail(userEmail);
+    }
+  }, []);
 
   useEffect(() => {
     if (
@@ -38,7 +52,7 @@ const RiseOnCoverLetter = () => {
     }
   }, [senderName, senderEmail, profile, targetRole, company, jobDescription]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setTouched({
       senderName: true,
       senderEmail: true,
@@ -48,20 +62,27 @@ const RiseOnCoverLetter = () => {
     });
 
     if (senderName && senderEmail && profile && targetRole && company) {
-      const letter = `
-Dear Hiring Manager,
+      setIsGenerating(true);
+      
+      // Simulate loading delay for better UX
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const letter = `Dear Hiring Manager,
 
-I am writing to express my keen interest in the ${targetRole} position at ${company}. With a solid background in ${profile}, I am confident in my ability to contribute effectively to your team.
+I am writing to express my keen interest in the ${targetRole} position at ${company}. With a solid background in ${profile}, I am confident in my ability to contribute effectively to your team and drive meaningful results.
 
 ${jobDescription}
+
+My technical expertise, combined with my passion for innovation and continuous learning, makes me an ideal candidate for this role. I am particularly drawn to ${company}'s commitment to excellence and would be thrilled to contribute to your team's success.
 
 Thank you for considering my application. I look forward to the opportunity to discuss how I can add value to ${company}'s mission and goals.
 
 Sincerely,
 ${senderName}
-${senderEmail}
-      `.trim();
+${senderEmail}`;
+      
       setCoverLetter(letter);
+      setIsGenerating(false);
     }
   };
 
@@ -69,299 +90,328 @@ ${senderEmail}
     try {
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF();
-      const lines = doc.splitTextToSize(coverLetter, 180);
-      doc.setFont("times", "normal");
-      doc.setFontSize(12);
-      doc.text(lines, 15, 20);
-      doc.save("cover_letter.pdf");
+      
+      // Add header
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
+      doc.text("Cover Letter", 105, 25, { align: "center" });
+      
+      // Add content
+      const lines = doc.splitTextToSize(coverLetter, 170);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.text(lines, 20, 45);
+      
+      doc.save(`${senderName}_Cover_Letter.pdf`);
     } catch (err) {
       console.error("Failed to load jsPDF dynamically:", err);
     }
   };
 
   return (
-    <div
-      className="flex min-h-screen font-sans text-gray-800"
-      
-      >
-        
-      {/* Sidebar (same as Dashboard) */}
-     {/* Sidebar */}
-<aside className="w-28 md:w-32 lg:w-40 min-h-screen bg-gradient-to-b from-gray-900 to-gray-700 shadow-xl text-white p-4 md:p-6 border-r border-gray-600 flex flex-col items-center">
-  
-  {/* 🔹 Top Section with Logo */}
-  <div className="flex flex-col items-center gap-2 mb-6">
-    <img
-      src={logo} // 🧩 your university logo
-      alt="University Logo"
-      className="w-14 h-14 md:w-16 md:h-16 object-contain rounded-full shadow-md"
-    />
-    <h1 className="text-lg font-bold text-yellow-300 tracking-wide">PU</h1>
-  </div>
+    <div className="flex min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-blue-50 pt-20">
+      {/* Sidebar */}
+      <aside className="fixed left-0 top-20 w-28 md:w-32 lg:w-40 h-[calc(100vh-5rem)] bg-gradient-to-b from-gray-900 to-gray-700 shadow-xl text-white p-4 md:p-6 border-r border-gray-600 flex flex-col items-center z-40">
+        <div className="flex flex-col items-center gap-2 mb-6">
+          {/* <img
+            src={logo}
+            alt="University Logo"
+            className="w-14 h-14 md:w-16 md:h-16 object-contain rounded-full shadow-md"
+          />
+          <h1 className="text-lg font-bold text-yellow-300 tracking-wide">PU</h1> */}
+        </div>
 
-  {/* 🔹 Navigation (Right Below PU) */}
-  <nav className="flex-1 space-y-6 text-center mt-2">
-    <Link
-      to="/myaccount"
-      className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-    >
-      <img src={pro} alt="Profile" className="w-10 h-10 rounded-full mb-1" />
-      <span className="text-xs">Account</span>
-    </Link>
-
-    <Link
-      to="/dashboard"
-      className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-    >
-      <img src={resume} alt="resume" className="w-10 h-10 rounded-full mb-1" />
-      <span className="text-xs">Dashboard</span>
-    </Link>
-
-    <Link
-      to="/riseon-coverletter"
-      className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-    >
-      <img src={letter} alt="letter" className="w-10 h-10 rounded-full mb-1" />
-      <span className="text-xs">Letter</span>
-    </Link>
-
-    <Link
-      to="/riseon-interview"
-      className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-    >
-      <img src={interview} alt="interview" className="w-10 h-10 rounded-full mb-1" />
-      <span className="text-xs">Interview</span>
-    </Link>
-
-    <Link
-      to="/riseon-job-boards"
-      className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-    >
-      <img src={job} alt="job" className="w-10 h-10 rounded-full mb-1" />
-      <span className="text-xs">Jobs</span>
-    </Link>
-
-    <Link
-      to="/riseon-quiz"
-      className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300"
-    >
-      <img src={quiz} alt="quiz" className="w-10 h-10 rounded-full mb-1" />
-      <span className="text-xs">Quiz</span>
-    </Link>
-  </nav>
-</aside>
-
-
-
-
+        <nav className="flex-1 space-y-6 text-center mt-2">
+          <Link to="/myaccount" className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300">
+            <img src={pro} alt="Profile" className="w-10 h-10 rounded-full mb-1" />
+            <span className="text-xs">Account</span>
+          </Link>
+          <Link to="/dashboard" className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300">
+            <img src={resume} alt="resume" className="w-10 h-10 rounded-full mb-1" />
+            <span className="text-xs">Dashboard</span>
+          </Link>
+          <Link to="/riseon-coverletter" className="flex flex-col items-center text-yellow-300 transition-all duration-300">
+            <img src={letter} alt="letter" className="w-10 h-10 rounded-full mb-1" />
+            <span className="text-xs">Letter</span>
+          </Link>
+          <Link to="/riseon-interview" className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300">
+            <img src={interview} alt="interview" className="w-10 h-10 rounded-full mb-1" />
+            <span className="text-xs">Interview</span>
+          </Link>
+          <Link to="/riseon-job-boards" className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300">
+            <img src={job} alt="job" className="w-10 h-10 rounded-full mb-1" />
+            <span className="text-xs">Jobs</span>
+          </Link>
+          <Link to="/riseon-quiz" className="flex flex-col items-center text-white/80 hover:text-yellow-300 transition-all duration-300">
+            <img src={quiz} alt="quiz" className="w-10 h-10 rounded-full mb-1" />
+            <span className="text-xs">Quiz</span>
+          </Link>
+        </nav>
+      </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-6 sm:p-10 bg-transparent">
-        {/* 🔹 University Heading Section */}
-<div className="text-center mb-12">
-  <h2 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-orange-600 via-pink-600 to-blue-600 text-transparent bg-clip-text drop-shadow-sm">
-    Pondicherry University
-  </h2>
-  <p className="text-xl md:text-2xl text-gray-700 font-medium mt-3 tracking-wide">
-    Department of Computer Science
-  </p>
-  <div className="mt-2 h-1 w-32 bg-gradient-to-r from-orange-500 to-yellow-400 mx-auto rounded-full"></div>
-</div>
-        <div className="max-w-6xl w-full bg-white shadow-2xl rounded-2xl p-6 sm:p-10 border border-gray-200">
-          
+      <motion.main 
+        className="flex-1 p-6 md:p-8 ml-28 md:ml-32 lg:ml-40" 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }} 
+        transition={{ duration: 0.8 }}
+      >
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-orange-600 via-pink-600 to-blue-600 text-transparent bg-clip-text drop-shadow-sm">
+            Pondicherry University
+          </h2>
+          <p className="text-xl md:text-2xl text-gray-700 font-medium mt-3 tracking-wide">
+            Department of Computer Science
+          </p>
+          <div className="mt-2 h-1 w-32 bg-gradient-to-r from-orange-500 to-yellow-400 mx-auto rounded-full"></div>
+        </div>
 
-          {/* Header */}
-          <div className="mb-8 border-b-2 border-gray-100 pb-4">
-            <h1 className="text-4xl font-extrabold flex items-center gap-2 text-slate-800">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500">
-                Cover Letter
-              </span>{" "}
-              Generator
-              {/* <HelpCircle size={24} className="text-blue-500" /> */}
-            </h1>
-            <p className="mt-2 text-md text-gray-500">
-              Generate a professional cover letter in seconds.
-            </p>
-          </div>
-
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Left: Form */}
-            <div className="w-full lg:w-1/2 space-y-6">
-              <InputField
-                label="Your Full Name"
-                required
-                value={senderName}
-                setValue={setSenderName}
-                touched={touched}
-                setTouched={setTouched}
-                fieldName="senderName"
-                placeholder="e.g. John Doe"
-              />
-
-              <InputField
-                label="Your Email"
-                required
-                value={senderEmail}
-                setValue={setSenderEmail}
-                touched={touched}
-                setTouched={setTouched}
-                fieldName="senderEmail"
-                placeholder="e.g. john@example.com"
-              />
-
-              <InputField
-                label="Target Job Role"
-                required
-                value={targetRole}
-                setValue={setTargetRole}
-                touched={touched}
-                setTouched={setTouched}
-                fieldName="targetRole"
-                placeholder="e.g. Frontend Developer"
-              />
-
-              <InputField
-                label="Company"
-                required
-                value={company}
-                setValue={setCompany}
-                touched={touched}
-                setTouched={setTouched}
-                fieldName="company"
-                placeholder="e.g. Google"
-              />
-
-              {/* Select Profile */}
-              <div>
-                <label className="block text-sm font-medium mb-1 text-slate-700">
-                  Select Profile <span className="text-red-600">*</span>
-                </label>
-                <select
-                  value={profile}
-                  onChange={(e) => setProfile(e.target.value)}
-                  onBlur={() =>
-                    setTouched((prev) => ({ ...prev, profile: true }))
-                  }
-                  className={`w-full border rounded-lg px-3 py-2 text-sm bg-white transition-colors focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    isInvalid("profile") ? "border-red-500" : "border-gray-300"
-                  }`}
-                >
-                  <option value="">-- Select --</option>
-                  <optgroup label="Software Engineering">
-                    <option>Junior Software Engineer</option>
-                    <option>Senior Software Engineer</option>
-                    <option>Full Stack Developer</option>
-                    <option>MERN Stack Developer</option>
-                    <option>Frontend Developer</option>
-                    <option>Backend Developer</option>
-                  </optgroup>
-                  <optgroup label="Data & Analytics">
-                    <option>Data Analyst</option>
-                    <option>Data Scientist</option>
-                    <option>Machine Learning Engineer</option>
-                    <option>Business Intelligence (BI) Analyst</option>
-                  </optgroup>
-                  <optgroup label="Cloud & DevOps">
-                    <option>DevOps Engineer</option>
-                    <option>Cloud Architect</option>
-                    <option>Site Reliability Engineer (SRE)</option>
-                  </optgroup>
-                  <optgroup label="Cybersecurity">
-                    <option>Cybersecurity Analyst</option>
-                    <option>Penetration Tester</option>
-                    <option>Security Engineer</option>
-                  </optgroup>
-                  <optgroup label="Management & Leadership">
-                    <option>Product Manager</option>
-                    <option>IT Manager</option>
-                    <option>IT Director</option>
-                    <option>VP of Engineering</option>
-                    <option>Chief Information Officer (CIO)</option>
-                    <option>Chief Technology Officer (CTO)</option>
-                    <option>Chief Information Security Officer (CISO)</option>
-                  </optgroup>
-                  <optgroup label="Design">
-                    <option>UI/UX Designer</option>
-                    <option>Graphic Designer</option>
-                  </optgroup>
-                </select>
-                {isInvalid("profile") && (
-                  <p className="text-red-500 text-xs mt-1">
-                    Please select a profile.
-                  </p>
-                )}
+        {/* Main Card */}
+        <motion.div 
+          className="max-w-7xl mx-auto bg-white shadow-2xl rounded-3xl overflow-hidden"
+          variants={cardVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Card Header */}
+          <div className="bg-gradient-to-r from-orange-500 to-pink-500 p-8 text-white">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                <FileText size={32} />
               </div>
-
-              {/* Job Description */}
               <div>
-                <label className="block text-sm font-medium mb-1 text-slate-700">
-                  Job Description
-                </label>
-                <textarea
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-                  rows={4}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  placeholder="Paste the job description here..."
-                />
-                <p className="text-xs text-gray-500 mt-1 italic">
-                  Auto-filled after all fields are completed. You can edit it
-                  manually.
-                </p>
-              </div>
-
-              {/* Submit */}
-              <div className="pt-2">
-                <button
-                  onClick={handleSubmit}
-                  className="flex items-center justify-center w-full sm:w-auto gap-2 px-6 py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-full shadow-lg font-bold hover:opacity-90 transition-opacity transform hover:scale-105"
-                >
-                  {/* <Gem size={18} /> */}
-                  <span>Generate Cover Letter</span>
-                </button>
+                <h1 className="text-3xl md:text-4xl font-bold">Cover Letter Generator</h1>
+                <p className="text-lg opacity-90">Create professional cover letters in minutes</p>
               </div>
             </div>
+          </div>
 
-            {/* Right: Preview */}
-            <div className="w-full lg:w-1/2 mt-8 lg:mt-0 relative">
-              <h2 className="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <ChevronDown
-                  size={20}
-                  className="text-orange-500 lg:hidden"
+          {/* Card Body */}
+          <div className="p-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              {/* Left Side - Form */}
+              <motion.div 
+                className="space-y-6"
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                transition={{ delay: 0.2 }}
+              >
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-2">Personal Information</h2>
+                  <p className="text-gray-600">Fill in your details to generate a personalized cover letter</p>
+                </div>
+
+                <EnhancedInputField
+                  label="Your Full Name"
+                  icon={<User size={20} />}
+                  required
+                  value={senderName}
+                  setValue={setSenderName}
+                  touched={touched}
+                  setTouched={setTouched}
+                  fieldName="senderName"
+                  placeholder="e.g. John Doe"
                 />
-                Preview Cover Letter:
-              </h2>
-              {coverLetter ? (
-                <div className="relative">
-                  <pre className="whitespace-pre-wrap text-sm sm:text-base font-serif bg-gray-50 p-6 rounded-xl border border-gray-200 text-slate-700 min-h-[300px] overflow-auto">
-                    {coverLetter}
-                  </pre>
-                  <div className="absolute top-2 right-2">
+
+                <EnhancedInputField
+                  label="Your Email"
+                  icon={<Mail size={20} />}
+                  required
+                  value={senderEmail}
+                  setValue={setSenderEmail}
+                  touched={touched}
+                  setTouched={setTouched}
+                  fieldName="senderEmail"
+                  placeholder="e.g. john@example.com"
+                  type="email"
+                />
+
+                <EnhancedInputField
+                  label="Target Job Role"
+                  icon={<Briefcase size={20} />}
+                  required
+                  value={targetRole}
+                  setValue={setTargetRole}
+                  touched={touched}
+                  setTouched={setTouched}
+                  fieldName="targetRole"
+                  placeholder="e.g. Frontend Developer"
+                />
+
+                <EnhancedInputField
+                  label="Company Name"
+                  icon={<Building size={20} />}
+                  required
+                  value={company}
+                  setValue={setCompany}
+                  touched={touched}
+                  setTouched={setTouched}
+                  fieldName="company"
+                  placeholder="e.g. Google"
+                />
+
+                {/* Enhanced Profile Select */}
+                <div>
+                  <label className="block text-sm font-semibold mb-2 text-gray-700">
+                    Select Your Profile <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={profile}
+                      onChange={(e) => setProfile(e.target.value)}
+                      onBlur={() => setTouched((prev) => ({ ...prev, profile: true }))}
+                      className={`w-full border-2 rounded-xl px-4 py-3 text-sm bg-white transition-all duration-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 appearance-none ${
+                        isInvalid("profile") ? "border-red-500" : "border-gray-300 hover:border-gray-400"
+                      }`}
+                    >
+                      <option value="">-- Select Your Profile --</option>
+                      <optgroup label="🔧 Software Engineering">
+                        <option>Junior Software Engineer</option>
+                        <option>Senior Software Engineer</option>
+                        <option>Full Stack Developer</option>
+                        <option>MERN Stack Developer</option>
+                        <option>Frontend Developer</option>
+                        <option>Backend Developer</option>
+                      </optgroup>
+                      <optgroup label="📊 Data & Analytics">
+                        <option>Data Analyst</option>
+                        <option>Data Scientist</option>
+                        <option>Machine Learning Engineer</option>
+                        <option>Business Intelligence (BI) Analyst</option>
+                      </optgroup>
+                      <optgroup label="☁️ Cloud & DevOps">
+                        <option>DevOps Engineer</option>
+                        <option>Cloud Architect</option>
+                        <option>Site Reliability Engineer (SRE)</option>
+                      </optgroup>
+                      <optgroup label="🛡️ Cybersecurity">
+                        <option>Cybersecurity Analyst</option>
+                        <option>Penetration Tester</option>
+                        <option>Security Engineer</option>
+                      </optgroup>
+                      <optgroup label="👥 Management & Leadership">
+                        <option>Product Manager</option>
+                        <option>IT Manager</option>
+                        <option>IT Director</option>
+                        <option>VP of Engineering</option>
+                        <option>Chief Information Officer (CIO)</option>
+                        <option>Chief Technology Officer (CTO)</option>
+                        <option>Chief Information Security Officer (CISO)</option>
+                      </optgroup>
+                      <optgroup label="🎨 Design">
+                        <option>UI/UX Designer</option>
+                        <option>Graphic Designer</option>
+                      </optgroup>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
+                  </div>
+                  {isInvalid("profile") && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                      <span>⚠️</span> Please select your profile.
+                    </p>
+                  )}
+                </div>
+
+                {/* Enhanced Job Description */}
+                <div>
+                  <label className="block text-sm font-semibold mb-2 text-gray-700">
+                    Job Description (Optional)
+                  </label>
+                  <textarea
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                    rows={4}
+                    className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 hover:border-gray-400 resize-none"
+                    placeholder="Paste the job description here or leave empty for auto-generation..."
+                  />
+                  <p className="text-xs text-gray-500 mt-2 italic">
+                    💡 Auto-generated based on your inputs. You can customize it manually.
+                  </p>
+                </div>
+
+                {/* Enhanced Submit Button */}
+                <div className="pt-4">
+                  <button
+                    onClick={handleSubmit}
+                    disabled={isGenerating}
+                    className="w-full bg-gradient-to-r from-orange-500 to-pink-500 text-white py-4 px-8 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <FileText size={20} />
+                        Generate Cover Letter
+                      </>
+                    )}
+                  </button>
+                </div>
+              </motion.div>
+
+              {/* Right Side - Preview */}
+              <motion.div 
+                className="bg-gray-50 rounded-2xl p-8"
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                transition={{ delay: 0.4 }}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    <FileText className="text-orange-500" size={24} />
+                    Preview
+                  </h2>
+                  {coverLetter && (
                     <button
                       onClick={handleDownloadPDF}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-xl shadow-lg hover:bg-blue-700 transition-all duration-300 hover:scale-105"
                     >
-                      <Download size={20} />
+                      <Download size={16} />
                       Download PDF
                     </button>
+                  )}
+                </div>
+
+                {coverLetter ? (
+                  <motion.div 
+                    className="bg-white rounded-xl shadow-lg p-6 border border-gray-200"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <div className="prose prose-sm max-w-none">
+                      <pre className="whitespace-pre-wrap font-serif text-gray-700 leading-relaxed text-sm">
+                        {coverLetter}
+                      </pre>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <div className="bg-white rounded-xl shadow-lg p-12 border border-gray-200 text-center">
+                    <div className="text-gray-400 mb-4">
+                      <FileText size={48} className="mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-medium">Your cover letter will appear here</p>
+                      <p className="text-sm mt-2">Fill out the form to generate your professional cover letter</p>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="text-center p-10 bg-gray-50 rounded-xl border border-gray-200 text-gray-500 min-h-[300px] flex items-center justify-center">
-                  <p>Fill out the form to generate your cover letter.</p>
-                </div>
-              )}
+                )}
+              </motion.div>
             </div>
           </div>
-        </div>
-      </main>
+        </motion.div>
+      </motion.main>
     </div>
   );
 };
 
-// Reusable Input Field
-const InputField = ({
+// Enhanced Input Field Component
+const EnhancedInputField = ({
   label,
+  icon,
   value,
   setValue,
   touched,
@@ -369,25 +419,33 @@ const InputField = ({
   fieldName,
   placeholder,
   required = false,
+  type = "text"
 }) => {
   const isInvalid = !value && touched[fieldName];
+  
   return (
     <div>
-      <label className="block text-sm font-medium mb-1 text-slate-700">
-        {label} {required && <span className="text-red-600">*</span>}
+      <label className="block text-sm font-semibold mb-2 text-gray-700">
+        {label} {required && <span className="text-red-500">*</span>}
       </label>
-      <input
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={() => setTouched((prev) => ({ ...prev, [fieldName]: true }))}
-        className={`w-full border rounded-lg px-3 py-2 text-sm transition-colors focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-          isInvalid ? "border-red-500" : "border-gray-300"
-        }`}
-        placeholder={placeholder}
-      />
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+          {icon}
+        </div>
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onBlur={() => setTouched((prev) => ({ ...prev, [fieldName]: true }))}
+          className={`w-full border-2 rounded-xl pl-12 pr-4 py-3 text-sm transition-all duration-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
+            isInvalid ? "border-red-500" : "border-gray-300 hover:border-gray-400"
+          }`}
+          placeholder={placeholder}
+        />
+      </div>
       {isInvalid && (
-        <p className="text-red-500 text-xs mt-1">
-          Please enter {label.toLowerCase()}.
+        <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+          <span>⚠️</span> Please enter {label.toLowerCase()}.
         </p>
       )}
     </div>

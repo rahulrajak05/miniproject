@@ -5,6 +5,7 @@ import { RiFilePdfLine } from "react-icons/ri";
 import { MdOutlinePlayCircleFilled } from "react-icons/md";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo.png"; // Make sure to have a logo image in the specified path  
+
 const TopNavBar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef();
@@ -21,25 +22,29 @@ const TopNavBar = () => {
   }, []);
 
   return (
-   <div className="w-full bg-black text-white flex items-center justify-between px-4 py-3 border-b border-white">
+   <div className="w-full bg-black text-white flex items-center justify-between px-4 py-3 border-b border-white fixed top-0 left-0 z-50">
   {/* 🔹 Logo + Title */}
-  <div className="flex items-center space-x-4">
-    {/* University Logo */}
-    <img
-      src={logo} // 🧩 import your logo at the top → import logo from "../assets/logo.png";
-      alt="University Logo"
-      className="w-10 h-10 md:w-12 md:h-12 rounded-full object-contain"
-    />
-
-    {/* Title */}
-    <h1 className="text-xl md:text-2xl font-bold tracking-wide">
-      <span className="text-white">PLACEMENT</span>
-      <span className="text-yellow-400">GUIDANCE</span>
-      <span className="text-white">RESUME</span>
-    </h1>
-  </div>
-
-
+  <div className="flex items-center space-x-3">
+           <Link
+             to="/home"
+             aria-label="Go to home"
+             className="block h-10 w-10 md:h-12 md:w-12 rounded-full overflow-hidden ring-2 ring-white/20 bg-white shadow-sm flex-shrink-0"
+           >
+             <img
+               src={logo}
+               alt="NEXTSTEP logo"
+               className="h-full w-full object-cover"
+             />
+           </Link>
+           <div className="flex flex-col leading-tight">
+             <span className="text-3xl font-bold text-white">
+               NEXTSTEP
+             </span>
+             <span className="text-sm text-gray-300">
+               Your Pathway to Career Success
+             </span>
+           </div>
+         </div>
 
       {/* Right-side buttons */}
       <div className="flex items-center space-x-3">

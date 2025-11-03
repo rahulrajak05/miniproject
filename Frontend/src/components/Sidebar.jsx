@@ -13,16 +13,16 @@ const Sidebar = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <aside className="w-28 md:w-32 lg:w-40 min-h-screen bg-gradient-to-b from-gray-900 to-gray-700 shadow-xl text-white p-4 md:p-6 border-r border-gray-600 flex flex-col items-center">
+    <aside className="hidden md:flex fixed left-0 top-20 w-32 lg:w-40 h-[calc(100vh-5rem)] bg-gradient-to-b from-gray-900 to-gray-700 shadow-xl text-white p-4 md:p-6 border-r border-gray-600 flex-col items-center z-40">
       
       {/* 🔹 Top Section with Logo */}
       <div className="flex flex-col items-center gap-2 mb-6">
-        <img
+        {/* <img
           src={logo}
           alt="University Logo"
           className="w-14 h-14 md:w-16 md:h-16 object-contain rounded-full shadow-md"
         />
-        <h1 className="text-lg font-bold text-yellow-300 tracking-wide">PU</h1>
+        <h1 className="text-lg font-bold text-yellow-300 tracking-wide">PU</h1> */}
       </div>
 
       {/* 🔹 Navigation (Just Below PU) */}
@@ -80,7 +80,7 @@ const Sidebar = () => {
         <Link
           to="/riseon-quiz"
           className={`flex flex-col items-center transition-all duration-300 ${
-            isActive("/riseon-quiz") ? "text-yellow-300" : "text-white/80 hover:text-yellow-300"
+            isActive("/quiz-home") ? "text-yellow-300" : "text-white/80 hover:text-yellow-300"
           }`}
         >
           <img src={quiz} alt="Quiz" className="w-10 h-10 rounded-full mb-1" />

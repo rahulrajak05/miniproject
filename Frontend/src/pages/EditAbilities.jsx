@@ -1,171 +1,208 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { 
+  FaArrowLeft, 
+  FaSave, 
+  FaTimes, 
+  FaPlus, 
+  FaTrash, 
+  FaBrain, 
+  FaUsers 
+} from "react-icons/fa";
+ 
 import { useProfile } from "../context/ProfileContext";
+import Sidebar from "../components/Sidebar";
 
 const EditAbilities = () => {
-  const [skills, setSkills] = useState([{ name: "", level: "1 Novice" }]);
-  const [jobRole, setJobRole] = useState("");
-  const [generationIndex, setGenerationIndex] = useState(0);
-  const [generatedSkills, setGeneratedSkills] = useState([]);
+  const [skills, setSkills] = useState([{ name: "" }]);
+  
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  
 
   const { addAbilities } = useProfile();
   const navigate = useNavigate();
 
-  const handleSkillChange = (index, key, value) => {
+  const validateForm = () => {
+    const newErrors = {};
+    
+    skills.forEach((skill, index) => {
+      if (!skill.name.trim()) {
+        newErrors[`skill_${index}`] = "Skill name is required";
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSkillChange = (index, value) => {
     const updated = [...skills];
-    updated[index][key] = value;
+    updated[index].name = value;
     setSkills(updated);
-  };
-
-  const addSkill = () => {
-    setSkills([...skills, { name: "", level: "1 Novice" }]);
-  };
-
-  const handleAIGenerate = () => {
-    if (jobRole.trim()) {
-      const newSkills = [
-        "Team Collaboration",
-        "Leadership",
-        "Conflict Resolution",
-        "Empathy",
-        "Effective Communication",
-      ];
-      setGeneratedSkills(newSkills);
-      setGenerationIndex(0);
+    
+    // Clear error for this field
+    if (errors[`skill_${index}`] && value.trim()) {
+      const newErrors = { ...errors };
+      delete newErrors[`skill_${index}`];
+      setErrors(newErrors);
     }
   };
 
-  const handleSave = () => {
-    addAbilities(skills);
-    navigate("/myprofile");
+  const addSkill = () => {
+    setSkills([...skills, { name: "" }]);
   };
 
+  const removeSkill = (index) => {
+    if (skills.length > 1) {
+      const updated = skills.filter((_, idx) => idx !== index);
+      setSkills(updated);
+      
+      // Clear error for removed skill
+      const newErrors = { ...errors };
+      delete newErrors[`skill_${index}`];
+      setErrors(newErrors);
+    }
+  };
+
+  
+
+  const handleSave = async () => {
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
+      addAbilities(skills);
+      navigate("/myprofile");
+    } catch (error) {
+      console.error("Error saving abilities:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const inputClasses = (fieldName) => `
+    w-full border-2 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-500
+    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+    transition-all duration-200 ${errors[fieldName] ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'}
+  `;
+
   return (
-    <div className="min-h-screen bg-gray-100 py-10 px-4">
-      <div className="max-w-6xl mx-auto bg-white p-8 rounded-xl shadow-md">
-                <button onClick={() => navigate(-1)} className="mb-4 text-gray-600 hover:text-black">←</button>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-20">
+      {/* Fixed Sidebar */}
+      <Sidebar />
 
-        <h1 className="text-3xl font-bold text-blue-950 mb-1">
-          Edit Abilities – Interpersonal Skills
-        </h1>
-        <p className="text-sm text-gray-600 mb-8">
-          List your key interpersonal skills, such as leadership, communication, and teamwork.
-        </p>
+      {/* Main content shifted to clear sidebar */}
+  <div className="ml-0 md:ml-32 lg:ml-40 p-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Header Card */}
+          <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+            >
+              <FaArrowLeft className="text-sm" />
+              <span>Back</span>
+            </button>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Left - Skills Input */}
-          <div className="md:col-span-2 space-y-5">
-            {skills.map((skill, idx) => (
-              <div key={idx} className="flex gap-4 items-start">
-                <div className="flex-1">
-                  <label className="text-sm font-medium block mb-1">
-                    Interpersonal Skill *
-                  </label>
-                  <input
-                    type="text"
-                    value={skill.name}
-                    onChange={(e) =>
-                      handleSkillChange(idx, "name", e.target.value)
-                    }
-                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Interpersonal Skill"
-                  />
-                </div>
-                <div className="w-48">
-                  <label className="text-sm font-medium block mb-1">Level</label>
-                  <select
-                    value={skill.level}
-                    onChange={(e) =>
-                      handleSkillChange(idx, "level", e.target.value)
-                    }
-                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option>1 Novice</option>
-                    <option>2 Beginner</option>
-                    <option>3 Intermediate</option>
-                    <option>4 Advanced</option>
-                    <option>5 Expert</option>
-                  </select>
-                </div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <FaUsers className="text-blue-600 text-xl" />
               </div>
-            ))}
-            <button
-              onClick={addSkill}
-              className="text-sm text-blue-700 hover:underline"
-            >
-              + Add Skill
-            </button>
-          </div>
-
-          {/* Right - AI Suggestions */}
-          <div className="border border-gray-200 rounded p-5 bg-gray-50">
-            <h2 className="font-semibold text-gray-800 mb-3">AI Suggestions</h2>
-            <label className="text-sm font-medium block mb-1">Job Role *</label>
-            <input
-              type="text"
-              value={jobRole}
-              onChange={(e) => setJobRole(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter Job Role"
-            />
-            <p className="text-xs text-gray-500 mb-2">
-              AI suggests skills based on the job role you enter.
-            </p>
-            <button
-              onClick={handleAIGenerate}
-              className="w-full bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-800"
-            >
-              Generate with AI ❤️
-            </button>
-
-            <div className="mt-6 border-t pt-4">
-              <h3 className="font-semibold text-sm mb-2">Previous Generations</h3>
-              {generatedSkills.length === 0 ? (
-                <p className="text-sm text-gray-500">No Interpersonal Skills available</p>
-              ) : (
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-700">
-                    {generatedSkills[generationIndex]}
-                  </p>
-                  <div className="flex gap-2 items-center">
-                    <button
-                      disabled={generationIndex === 0}
-                      onClick={() => setGenerationIndex(generationIndex - 1)}
-                      className="border px-2 py-1 rounded disabled:opacity-50"
-                    >
-                      ←
-                    </button>
-                    <span className="text-xs text-gray-500">
-                      {generationIndex + 1}/{generatedSkills.length}
-                    </span>
-                    <button
-                      disabled={generationIndex === generatedSkills.length - 1}
-                      onClick={() => setGenerationIndex(generationIndex + 1)}
-                      className="border px-2 py-1 rounded disabled:opacity-50"
-                    >
-                      →
-                    </button>
-                  </div>
-                </div>
-              )}
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Abilities – Interpersonal Skills
+                </h1>
+                <p className="text-gray-600">
+                  List your key interpersonal skills, such as leadership, communication, and teamwork
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Buttons */}
-        <div className="mt-10 flex gap-4">
-          <button
-            onClick={handleSave}
-            className="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800"
-          >
-            Save
-          </button>
-          <button
-            onClick={() => navigate("/myprofile")}
-            className="border border-gray-400 text-gray-800 px-6 py-2 rounded hover:bg-gray-100"
-          >
-            Cancel
-          </button>
+          {/* Form Card */}
+          <div className="bg-white rounded-xl shadow-sm border p-8">
+            <div className="grid grid-cols-1 gap-8">
+              {/* Skills Input Section */}
+              <div className="lg:col-span-2">
+                <div className="flex items-center gap-2 mb-6">
+                  <h2 className="text-xl font-semibold text-gray-900">Interpersonal Skills</h2>
+                </div>
+
+                <div className="space-y-4">
+                  {skills.map((skill, idx) => (
+                    <div key={idx} className="flex gap-4 items-start">
+                      <div className="flex-1">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Interpersonal Skill <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={skill.name}
+                          onChange={(e) => handleSkillChange(idx, e.target.value)}
+                          className={inputClasses(`skill_${idx}`)}
+                          placeholder="e.g., Leadership, Communication, Teamwork"
+                        />
+                        {errors[`skill_${idx}`] && (
+                          <p className="text-red-500 text-sm mt-1">{errors[`skill_${idx}`]}</p>
+                        )}
+                      </div>
+
+                      {skills.length > 1 && (
+                        <button
+                          onClick={() => removeSkill(idx)}
+                          className="mt-8 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Remove skill"
+                        >
+                          <FaTrash className="text-sm" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={addSkill}
+                  className="mt-4 flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                >
+                  <FaPlus className="text-sm" />
+                  Add Another Skill
+                </button>
+
+                
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
+              <button
+                onClick={handleSave}
+                disabled={isLoading}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                
+                    Save Abilities
+                  </>
+                )}
+              </button>
+              
+              <button
+                onClick={() => navigate("/myprofile")}
+                className="border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
+              >
+                <FaTimes className="text-sm" />
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
