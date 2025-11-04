@@ -185,56 +185,7 @@ const Information = () => {
                 </div>
               </div>
 
-              {/* Social Links Section */}
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                  <FaLink className="text-blue-600" />
-                  Social Links
-                </h3>
-                <p className="text-sm text-gray-600 mb-4">Add your professional social media profiles (optional)</p>
-                
-                <div className="grid md:grid-cols-1 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">LinkedIn Profile</label>
-                    <input
-                      type="url"
-                      className={inputClasses('linkedin')}
-                      placeholder="https://linkedin.com/in/your-profile"
-                      value={socialLinks.linkedin}
-                      onChange={(e) =>
-                        setSocialLinks({ ...socialLinks, linkedin: e.target.value })
-                      }
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">GitHub Profile</label>
-                    <input
-                      type="url"
-                      className={inputClasses('github')}
-                      placeholder="https://github.com/your-username"
-                      value={socialLinks.github}
-                      onChange={(e) =>
-                        setSocialLinks({ ...socialLinks, github: e.target.value })
-                      }
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Portfolio Website</label>
-                    <input
-                      type="url"
-                      className={inputClasses('portfolio')}
-                      placeholder="https://your-portfolio.com"
-                      value={socialLinks.portfolio}
-                      onChange={(e) =>
-                        setSocialLinks({ ...socialLinks, portfolio: e.target.value })
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-
+              
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
                 <button
@@ -249,7 +200,7 @@ const Information = () => {
                     </>
                   ) : (
                     <>
-                      <FaSave className="text-sm" />
+                      {/* <FaSave className="text-sm" /> */}
                       Save Information
                     </>
                   )}

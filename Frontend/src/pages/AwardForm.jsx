@@ -16,7 +16,7 @@ import Sidebar from "../components/Sidebar";
 
 const AwardForm = () => {
   const [formData, setFormData] = useState({
-    type: "Award",
+    type: "Course",
     awardName: "",
     issueDate: "",
     issueAuthority: "",

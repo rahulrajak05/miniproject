@@ -238,7 +238,10 @@ const App = () => {
             <Route path="*" element={<div className="text-center mt-10">404 - Page Not Found</div>} />
           </Routes>
         </main>
-        <Footer />
+        {(() => {
+          const hideFooterOnRoutes = ["/quiz-home"]; // Use page-specific fixed footer on QuizHome
+          return hideFooterOnRoutes.includes(location.pathname) ? null : <Footer />;
+        })()}
       </div>
     </ProfileProvider>
   );

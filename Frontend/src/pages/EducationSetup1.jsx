@@ -335,29 +335,15 @@ const EducationSetup1 = () => {
               </div>
 
               {/* Description Section */}
-              <div className="mb-8">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Description
-                </label>
-                <textarea
-                  className={`${inputClasses('description')} min-h-[120px] resize-y`}
-                  rows="5"
-                  placeholder="Provide additional details about coursework, projects, achievements, or any relevant information..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-                <p className="text-gray-500 text-xs mt-1">
-                  Include relevant coursework, projects, thesis work, achievements, or extracurricular activities
-                </p>
-              </div>
+             
 
               {/* Additional Info Tabs */}
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                {/* <h3 className="text-lg font-semibold text-gray-900 mb-4">
                   Additional Information Sections (Optional)
-                </h3>
+                </h3> */}
                 
-                <div className="border-b border-gray-200 mb-6">
+                {/* <div className="border-b border-gray-200 mb-6">
                   <nav className="flex space-x-8">
                     {["Portfolio", "Courses Completed", "Topics of Interest"].map((tab) => (
                       <button
@@ -374,91 +360,9 @@ const EducationSetup1 = () => {
                       </button>
                     ))}
                   </nav>
-                </div>
+                </div> */}
 
-                {/* Tab Content */}
-                <div className="bg-gray-50 rounded-lg p-6">
-                  {activeTab === "Portfolio" && (
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Link Portfolio Items
-                      </label>
-                      <select className={selectClasses('portfolio')}>
-                        <option>Select Portfolio Items</option>
-                      </select>
-                      <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div className="flex items-start gap-2">
-                          <AiOutlineInfoCircle className="text-blue-500 mt-0.5 flex-shrink-0" />
-                          <p className="text-sm text-blue-700">
-                            Only existing portfolio items are available to link. To link new work, first add it to your portfolio section.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeTab === "Courses Completed" && (
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Course/Elective <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          className={inputClasses('elective')}
-                          placeholder="Enter course name"
-                        />
-                      </div>
-                      <div className="bg-white border border-gray-200 rounded-lg p-4">
-                        <h4 className="font-semibold text-gray-900 mb-3">AI Suggestions</h4>
-                        <input
-                          type="text"
-                          placeholder="Enter Degree and Specialization"
-                          className="w-full border rounded-lg px-3 py-2 mb-3 text-sm"
-                        />
-                        <button
-                          type="button"
-                          className="bg-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium"
-                          disabled
-                        >
-                          Generate with AI ❤️
-                        </button>
-                        <p className="text-xs text-gray-500 mt-2">Feature coming soon</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeTab === "Topics of Interest" && (
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Select Topic <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          className={inputClasses('topic')}
-                          placeholder="Enter topic of interest"
-                        />
-                      </div>
-                      <div className="bg-white border border-gray-200 rounded-lg p-4">
-                        <h4 className="font-semibold text-gray-900 mb-3">AI Suggestions</h4>
-                        <input
-                          type="text"
-                          placeholder="Enter Degree and Specialization"
-                          className="w-full border rounded-lg px-3 py-2 mb-3 text-sm"
-                        />
-                        <button
-                          type="button"
-                          className="bg-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium"
-                          disabled
-                        >
-                          Generate with AI ❤️
-                        </button>
-                        <p className="text-xs text-gray-500 mt-2">Feature coming soon</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                
               </div>
 
               {/* Action Buttons */}
@@ -475,7 +379,6 @@ const EducationSetup1 = () => {
                     </>
                   ) : (
                     <>
-                      <FaSave className="text-sm" />
                       Save Education
                     </>
                   )}

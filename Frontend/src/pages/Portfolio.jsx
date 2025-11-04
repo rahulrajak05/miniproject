@@ -131,7 +131,7 @@ const Portfolio = () => {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
-                  Add Portfolio - {projectType}
+                  Add {projectType}
                 </h1>
                 <p className="text-gray-600">
                   Showcase your best work and achievements in your professional portfolio

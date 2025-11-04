@@ -1,6 +1,317 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+// Optional LLM fallback (same style as in your QuizHome)
+import { generateQuestions as geminiGenerate } from "../api/gemini";
+
+const QUIZ_COUNT = 10;
+
+// Utilities
+const decodeEntities = (str = "") =>
+  str.replace(
+    /&quot;|&#039;|&amp;|&ldquo;|&rdquo;|&rsquo;|&lsquo;|&mdash;|&ndash;/g,
+    (m) => (m === "&amp;" ? "&" : m === "&mdash;" || m === "&ndash;" ? "—" : "'")
+  );
+
+const shuffle = (arr) => arr.slice().sort(() => Math.random() - 0.5);
+const norm = (s = "") => String(s || "").trim().toLowerCase();
+
+// Curated keywords per topic/subtopic for solid filtering
+const getKeywords = (mainTopic = "", subTopic = "") => {
+  const t = norm(mainTopic);
+  const s = norm(subTopic);
+  const kws = new Set();
+
+  // Data Structures: add strong keyword set
+  if (t === "data structures") {
+    [
+      "data structure",
+      "array",
+      "arrays",
+      "linked list",
+      "linked-list",
+      "doubly linked list",
+      "stack",
+      "queue",
+      "deque",
+      "tree",
+      "binary tree",
+      "bst",
+      "avl",
+      "heap",
+      "min-heap",
+      "max-heap",
+      "priority queue",
+      "hash",
+      "hash table",
+      "hashmap",
+      "graph",
+      "bfs",
+      "dfs",
+      "trie",
+      "segment tree",
+      "fenwick",
+      "disjoint set",
+      "union find",
+      "union-find",
+    ].forEach((k) => kws.add(k));
+  }
+
+  if (t === "algorithms") {
+    [
+      "algorithm",
+      "time complexity",
+      "space complexity",
+      "big o",
+      "sorting",
+      "searching",
+      "binary search",
+      "dynamic programming",
+      "greedy",
+      "recursion",
+      "divide and conquer",
+      "graph algorithm",
+      "shortest path",
+    ].forEach((k) => kws.add(k));
+  }
+
+  if (t === "programming") {
+    ["programming", "coding", "software", "code", "compile"].forEach((k) => kws.add(k));
+  }
+
+  if (t === "database") {
+    ["database", "databases", "sql", "mysql", "postgresql", "mongodb", "normalization", "acid"].forEach((k) =>
+      kws.add(k)
+    );
+  }
+
+  if (t === "networking") {
+    ["network", "networking", "tcp/ip", "tcp", "ip", "http", "dns", "routing", "osi"].forEach((k) => kws.add(k));
+  }
+
+  if (t === "operating system") {
+    ["operating system", "os", "process", "thread", "scheduling", "memory", "deadlock", "linux", "windows"].forEach(
+      (k) => kws.add(k)
+    );
+  }
+
+  if (t === "web development") {
+    ["web", "frontend", "backend", "client", "server", "api", "rest", "http", "javascript", "react", "node"].forEach(
+      (k) => kws.add(k)
+    );
+  }
+
+  // Add subtopic as keyword(s)
+  if (s) {
+    kws.add(s);
+    // canonicalize common spellings
+    if (s === "tcp/ip") kws.add("tcp/ip") || kws.add("tcp") || kws.add("ip");
+    if (s === "rest api") kws.add("rest") || kws.add("api");
+    if (s === "linked list") kws.add("linked-list") || kws.add("linked list");
+  }
+
+  return Array.from(kws);
+};
+
+const toTag = (s = "") =>
+  encodeURIComponent(
+    String(s).trim().toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-"
+  ));
+
+// Expand tags to improve match coverage on The Trivia API
+const topicTagSynonyms = (main, sub) => {
+  const t = norm(main);
+  const s = norm(sub);
+  const base = new Set([main, sub].filter(Boolean).map((x) => x.trim()));
+
+  // Add broad computing tags and related
+  const add = (...arr) => arr.forEach((x) => x && base.add(x));
+
+  if (t === "data structures") {
+    add("data-structures", "algorithms", "computer-science", "computers", "technology", "programming");
+  } else if (t === "algorithms") {
+    add("algorithms", "computer-science", "computers", "technology", "programming");
+  } else if (t === "programming") {
+    add("programming", "software-development", "coding", "computer-science", "computers", "technology");
+  } else if (t === "database") {
+    add("database", "databases", "sql", "mysql", "postgresql", "mongodb", "computers", "technology");
+  } else if (t === "networking") {
+    add("networking", "computer-networking", "computers", "technology");
+  } else if (t === "operating system") {
+    add("operating-systems", "os", "linux", "windows", "computers", "technology");
+  } else if (t === "web development") {
+    add("web-development", "frontend", "backend", "javascript", "react", "node", "computers", "technology");
+  } else if (t) {
+    add(t, "computer-science", "computers", "technology");
+  }
+
+  if (s) {
+    add(s);
+    if (s === "tcp/ip") add("tcp-ip");
+    if (s === "rest api") add("rest-api");
+    if (s === "linked list") add("linked-list");
+    if (s === "os") add("operating-systems");
+  }
+
+  return Array.from(base)
+    .filter(Boolean)
+    .map((x) => toTag(x));
+};
+
+// Filter by keywords
+const keywordFilter = (arr, keywords) => {
+  if (!Array.isArray(arr) || !arr.length) return [];
+  if (!Array.isArray(keywords) || !keywords.length) return arr;
+  return arr.filter((q) => {
+    const hay = norm(q.question) + " " + norm(q.answer) + " " + norm((q.incorrect_answers || []).join(" "));
+    return keywords.some((k) => hay.includes(norm(k)));
+  });
+};
+
+// Trivia API by tags; if no results, try broad categories and filter
+const fetchFromTriviaApi = async (mainTopic, subTopic, needed = QUIZ_COUNT) => {
+  const tags = topicTagSynonyms(mainTopic, subTopic);
+  const limit = Math.max(needed * 2, 24);
+  const mapTrivia = (data) =>
+    Array.isArray(data)
+      ? data
+          .filter((q) => q && q.question && q.correctAnswer && Array.isArray(q.incorrectAnswers))
+          .map((q) => ({
+            question: q.question.text || "",
+            options: shuffle([...(q.incorrectAnswers || []), q.correctAnswer]),
+            answer: q.correctAnswer,
+            incorrect_answers: q.incorrectAnswers || [],
+          }))
+      : [];
+
+  // Try tags first
+  try {
+    if (tags.length) {
+      const url = `https://the-trivia-api.com/v2/questions?limit=${limit}&difficulties=easy,medium,hard&tags=${tags.join(
+        ","
+      )}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        const mapped = mapTrivia(data);
+        const filtered = keywordFilter(mapped, getKeywords(mainTopic, subTopic));
+        if (filtered.length >= needed) return filtered.slice(0, needed);
+        if (filtered.length) return filtered.slice(0, needed);
+      }
+    }
+  } catch (e) {
+    // continue to category-based fetch
+  }
+
+  // Try broad categories (computers/technology-like) and then filter by keywords
+  try {
+    // Not all documented explicitly; science/technology generally yields some computing questions
+    const catUrl = `https://the-trivia-api.com/v2/questions?limit=${limit}&categories=science,technology`;
+    const res = await fetch(catUrl);
+    if (res.ok) {
+      const data = await res.json();
+      const mapped = mapTrivia(data);
+      const filtered = keywordFilter(mapped, getKeywords(mainTopic, subTopic));
+      if (filtered.length >= needed) return filtered.slice(0, needed);
+      if (filtered.length) return filtered.slice(0, needed);
+      if (mapped.length) return mapped.slice(0, needed); // last resort from this source
+    }
+  } catch (e) {
+    // fall through
+  }
+
+  return [];
+};
+
+// Fallback: OpenTDB + keyword filter
+const fetchFromOpenTdb = async (mainTopic, subTopic, needed = QUIZ_COUNT) => {
+  const tryFetch = async (amount = 50) => {
+    const res = await fetch(`https://opentdb.com/api.php?amount=${amount}&category=18&type=multiple`);
+    if (!res.ok) throw new Error(`OpenTDB error: ${res.status}`);
+    return res.json();
+  };
+
+  const keywords = getKeywords(mainTopic, subTopic);
+  const collected = [];
+  const seen = new Set();
+
+  try {
+    const data = await tryFetch(50);
+    if (data && Array.isArray(data.results)) {
+      for (const q of data.results) {
+        if (collected.length >= needed) break;
+        const mapped = {
+          question: decodeEntities(q.question || ""),
+          options: shuffle([...(q.incorrect_answers || []), q.correct_answer || ""]),
+          answer: q.correct_answer || "",
+          incorrect_answers: q.incorrect_answers || [],
+        };
+        const hay = norm(mapped.question) + " " + norm(mapped.answer) + " " + norm((mapped.incorrect_answers || []).join(" "));
+        const ok = keywords.length ? keywords.some((k) => hay.includes(norm(k))) : false;
+        if (ok && !seen.has(mapped.question)) {
+          collected.push(mapped);
+          seen.add(mapped.question);
+        }
+      }
+    }
+  } catch (e) {
+    // ignore network error and return what we have
+  }
+
+  return collected.slice(0, needed);
+};
+
+// Optional backend endpoint (recommended) that supports topic/subtopic directly
+// Expected response: { questions: [{ question, options: [..4], answer }] }
+const fetchFromBackend = async (mainTopic, subTopic, needed = QUIZ_COUNT) => {
+  const url = `http://localhost:8081/api/questions?topic=${encodeURIComponent(
+    mainTopic || ""
+  )}&subtopic=${encodeURIComponent(subTopic || "")}&limit=${needed}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Backend error: ${res.status}`);
+  const data = await res.json();
+  const arr = data?.questions || [];
+  return arr
+    .filter((q) => q && q.question && Array.isArray(q.options) && q.options.length >= 2 && q.answer)
+    .slice(0, needed)
+    .map((q) => ({
+      question: q.question,
+      options: shuffle(q.options),
+      answer: q.answer,
+      incorrect_answers: q.options.filter((o) => o !== q.answer),
+    }));
+};
+
+// Optional: Gemini fallback generator
+const fetchFromGemini = async (mainTopic, subTopic, needed = QUIZ_COUNT) => {
+  const key = (import.meta && import.meta.env && import.meta.env.VITE_GEMINI_API_KEY) || "";
+  if (!key) return [];
+  try {
+    const full = subTopic ? `${mainTopic} - ${subTopic}` : mainTopic || "Computer Science fundamentals";
+    const prompt = `Generate ${needed} multiple-choice questions for the topic "${full}". Each question must have exactly 4 options and one correct answer. Return STRICT JSON: {"questions":[{"question":"...","options":["A","B","C","D"],"answer":"A"}]}`;
+    const text = await geminiGenerate(prompt);
+    const start = text.indexOf("{");
+    const end = text.lastIndexOf("}");
+    const jsonText = start !== -1 && end !== -1 ? text.substring(start, end + 1) : text;
+    const parsed = JSON.parse(jsonText);
+    const arr = Array.isArray(parsed?.questions) ? parsed.questions : [];
+    const out = [];
+    for (const q of arr) {
+      if (!q || !q.question || !Array.isArray(q.options) || q.options.length !== 4 || !q.answer) continue;
+      out.push({
+        question: q.question,
+        options: shuffle(q.options),
+        answer: q.answer,
+        incorrect_answers: q.options.filter((o) => o !== q.answer),
+      });
+      if (out.length >= needed) break;
+    }
+    return out;
+  } catch (e) {
+    console.warn("Gemini fallback failed:", e);
+    return [];
+  }
+};
 
 const QuizStart = () => {
   const navigate = useNavigate();
@@ -11,8 +322,10 @@ const QuizStart = () => {
   const [finished, setFinished] = useState(false);
   const [userName, setUserName] = useState("");
   const [topic, setTopic] = useState("");
+  const [subtopic, setSubtopic] = useState("");
   const [loadingMessage, setLoadingMessage] = useState("Loading questions...");
 
+  // Read user name
   useEffect(() => {
     try {
       const profile = localStorage.getItem("userProfile");
@@ -28,229 +341,157 @@ const QuizStart = () => {
     setUserName(name);
   }, []);
 
+  // Read topic (and try to split subtopic if encoded like "Main - Sub")
   useEffect(() => {
-    const t = (localStorage.getItem("quizTopic") || "").trim();
-    setTopic(t);
+    const stored = (localStorage.getItem("quizTopic") || "").trim();
+    setTopic(stored);
+    if (stored.includes(" - ")) {
+      const [main, sub] = stored.split(" - ").map((s) => s.trim());
+      setTopic(main || stored);
+      setSubtopic(sub || "");
+    } else {
+      setSubtopic("");
+    }
   }, []);
 
   useEffect(() => {
-    const decode = (str = "") =>
-      str.replace(
-        /&quot;|&#039;|&amp;|&ldquo;|&rdquo;|&rsquo;|&lsquo;|&mdash;|&ndash;/g,
-        (m) => (m === "&amp;" ? "&" : m === "&mdash;" || m === "&ndash;" ? "—" : "'")
-      );
-
-    // Enhanced topic matching with better keyword detection
-    const matchesTopic = (q, t) => {
-      if (!t) return false;
-      
-      const topicLower = t.toLowerCase();
-      const hay = (
-        (q.question || "") +
-        " " +
-        (q.correct_answer || "") +
-        " " +
-        ((q.incorrect_answers || []).join(" ") || "")
-      ).toLowerCase();
-
-      // Exact topic keywords
-      const topicKeywords = topicLower.split(/\s+/).filter(w => w.length > 2);
-      
-      // Check if any keyword matches
-      return topicKeywords.some(keyword => hay.includes(keyword));
-    };
-
     const shuffleArray = (arr) => arr.sort(() => Math.random() - 0.5);
 
     const load = async () => {
-      const needed = 10;
-      const maxAttempts = 8;
-      const storedTopic = (localStorage.getItem("quizTopic") || topic || "").trim();
+      const needed = QUIZ_COUNT;
+      const savedTopicRaw = (localStorage.getItem("quizTopic") || "").trim();
+      const savedFullTopic = subtopic ? `${topic} - ${subtopic}` : topic;
 
-      if (!storedTopic) {
-        setLoadingMessage("No topic selected. Loading general CS questions...");
-      } else {
-        setLoadingMessage(`Searching for ${storedTopic} questions...`);
-      }
-
-      // 1) Try local saved questions first
+      // 1) Use saved set if exact-topic match
       try {
         const raw = localStorage.getItem("quizQuestions");
-        if (raw) {
+        const savedTopic = (localStorage.getItem("quizTopic") || "").trim();
+        if (raw && savedTopic && savedTopic === savedFullTopic) {
           const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            const savedTopic = localStorage.getItem("quizTopic");
-            // Only use saved questions if topic matches
-            if (savedTopic === storedTopic && parsed.length >= needed) {
-              setQuestions(
-                parsed.slice(0, needed).map((q) => ({
-                  question: decode(q.question),
-                  options: shuffleArray([...(q.incorrect_answers || q.options), q.correct_answer || q.answer]),
-                  answer: q.correct_answer || q.answer,
-                }))
-              );
-              return;
-            }
+          if (Array.isArray(parsed) && parsed.length >= needed) {
+            setQuestions(
+              parsed.slice(0, needed).map((q) => ({
+                question: decodeEntities(q.question),
+                options: shuffleArray([...(q.incorrect_answers || q.options), q.correct_answer || q.answer]),
+                answer: q.correct_answer || q.answer,
+              }))
+            );
+            setLoadingMessage("");
+            return;
           }
         }
       } catch (err) {
-        console.warn("parse saved quizQuestions failed:", err);
+        console.warn("Failed to use saved quizQuestions:", err);
       }
 
-      const collected = [];
-      const seenQuestions = new Set();
+      const mainTopic = topic || savedTopicRaw || "";
+      const subTopic = subtopic || "";
 
-      // 2) Aggressive topic-based search from CS category
-      if (storedTopic) {
-        setLoadingMessage(`Finding ${storedTopic} questions (attempt 1/${maxAttempts})...`);
-        
-        for (let attempt = 0; attempt < maxAttempts && collected.length < needed; attempt++) {
+      // 2) Preferred: backend (if available)
+      setLoadingMessage("Fetching topic-specific questions...");
+      try {
+        const fromBackend = await fetchFromBackend(mainTopic, subTopic, needed);
+        if (fromBackend.length >= needed) {
+          setQuestions(fromBackend);
+          setLoadingMessage("");
           try {
-            setLoadingMessage(`Finding ${storedTopic} questions (attempt ${attempt + 1}/${maxAttempts})...`);
-            
-            const res = await fetch(
-              `https://opentdb.com/api.php?amount=50&category=18&type=multiple`
-            );
-            const data = await res.json();
-            
-            if (!data.results || data.results.length === 0) {
-              console.warn("No results from API");
-              continue;
-            }
-
-            // First pass: strict matching
-            data.results.forEach((q) => {
-              if (collected.length >= needed) return;
-              const qKey = q.question;
-              if (!seenQuestions.has(qKey) && matchesTopic(q, storedTopic)) {
-                collected.push(q);
-                seenQuestions.add(qKey);
-              }
-            });
-
-            // Small delay to avoid rate limiting
-            await new Promise(resolve => setTimeout(resolve, 300));
-          } catch (err) {
-            console.warn(`Attempt ${attempt + 1} failed:`, err);
-          }
+            localStorage.setItem("quizQuestions", JSON.stringify(fromBackend));
+            localStorage.setItem("quizTopic", subTopic ? `${mainTopic} - ${subTopic}` : mainTopic);
+          } catch {}
+          return;
         }
-
-        // If we found enough topic-specific questions, use them
-        if (collected.length >= needed) {
-          setLoadingMessage(`Found ${collected.length} ${storedTopic} questions!`);
-        } else if (collected.length > 0) {
-          setLoadingMessage(`Found ${collected.length} ${storedTopic} questions, adding more CS questions...`);
-          
-          // Add general CS questions to fill remaining slots
-          try {
-            const remaining = needed - collected.length;
-            const res = await fetch(
-              `https://opentdb.com/api.php?amount=${remaining * 2}&category=18&type=multiple`
-            );
-            const data = await res.json();
-            
-            if (data.results) {
-              data.results.forEach((q) => {
-                if (collected.length >= needed) return;
-                const qKey = q.question;
-                if (!seenQuestions.has(qKey)) {
-                  collected.push(q);
-                  seenQuestions.add(qKey);
-                }
-              });
-            }
-          } catch (err) {
-            console.warn("Failed to fetch filler questions:", err);
-          }
-        } else {
-          // No topic matches found
-          setLoadingMessage(`No ${storedTopic} questions found. Loading general CS questions...`);
-          
-          try {
-            const res = await fetch(
-              `https://opentdb.com/api.php?amount=${needed * 2}&category=18&type=multiple`
-            );
-            const data = await res.json();
-            
-            if (data.results) {
-              data.results.forEach((q) => {
-                if (collected.length >= needed) return;
-                const qKey = q.question;
-                if (!seenQuestions.has(qKey)) {
-                  collected.push(q);
-                  seenQuestions.add(qKey);
-                }
-              });
-            }
-          } catch (err) {
-            console.error("Failed to fetch CS questions:", err);
-          }
+        if (fromBackend.length > 0) {
+          setQuestions(fromBackend);
         }
-      } else {
-        // No specific topic - get general CS questions
-        try {
-          const res = await fetch(
-            `https://opentdb.com/api.php?amount=${needed}&category=18&type=multiple`
-          );
-          const data = await res.json();
-          
-          if (data.results) {
-            collected.push(...data.results.slice(0, needed));
-          }
-        } catch (err) {
-          console.error("Failed to fetch questions:", err);
-        }
+      } catch {
+        // backend optional
       }
 
-      // Format & save
-      const formatted = collected.slice(0, needed).map((q) => ({
-        question: decode(q.question),
-        options: shuffleArray([...q.incorrect_answers, q.correct_answer]),
-        answer: q.correct_answer,
-        incorrect_answers: q.incorrect_answers,
-      }));
+      // 3) The Trivia API (tags, then categories) + keyword filter
+      try {
+        const fromTrivia = await fetchFromTriviaApi(mainTopic, subTopic, needed);
+        if (fromTrivia.length >= needed) {
+          setQuestions(fromTrivia);
+          setLoadingMessage("");
+          try {
+            localStorage.setItem("quizQuestions", JSON.stringify(fromTrivia));
+            localStorage.setItem("quizTopic", subTopic ? `${mainTopic} - ${subTopic}` : mainTopic);
+          } catch {}
+          return;
+        }
+        if (fromTrivia.length > 0) {
+          setQuestions(fromTrivia);
+        }
+      } catch (e) {
+        console.warn("Trivia API failed:", e);
+      }
 
-      if (formatted.length > 0) {
-        try {
-          localStorage.setItem("quizQuestions", JSON.stringify(formatted));
-          if (storedTopic) localStorage.setItem("quizTopic", storedTopic);
-        } catch {}
-        setQuestions(formatted);
+      // 4) OpenTDB + keyword filtering
+      const fromOpenTdb = await fetchFromOpenTdb(mainTopic, subTopic, needed);
+      if (fromOpenTdb.length >= needed) {
+        setQuestions(fromOpenTdb);
         setLoadingMessage("");
-      } else {
-        setLoadingMessage("Failed to load questions. Please try again.");
-        // Last resort: try saved questions
         try {
-          const fallbackRaw = localStorage.getItem("quizQuestions");
-          if (fallbackRaw) {
-            const parsed = JSON.parse(fallbackRaw);
+          localStorage.setItem("quizQuestions", JSON.stringify(fromOpenTdb));
+          localStorage.setItem("quizTopic", subTopic ? `${mainTopic} - ${subTopic}` : mainTopic);
+        } catch {}
+        return;
+      } else if (fromOpenTdb.length > 0) {
+        setQuestions(fromOpenTdb);
+      }
+
+      // 5) Gemini fallback (optional)
+      const fromGemini = await fetchFromGemini(mainTopic, subTopic, needed);
+      if (fromGemini.length > 0) {
+        setQuestions(fromGemini);
+        setLoadingMessage("");
+        try {
+          localStorage.setItem("quizQuestions", JSON.stringify(fromGemini));
+          localStorage.setItem("quizTopic", subTopic ? `${mainTopic} - ${subTopic}` : mainTopic);
+        } catch {}
+        return;
+      }
+
+      // 6) Last resort: any saved set
+      setLoadingMessage("No topic-specific questions found. Loading last saved set...");
+      try {
+        const fallbackRaw = localStorage.getItem("quizQuestions");
+        if (fallbackRaw) {
+          const parsed = JSON.parse(fallbackRaw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
             setQuestions(parsed.slice(0, needed));
             setLoadingMessage("");
+            return;
           }
-        } catch {}
-      }
+        }
+      } catch {}
+      setLoadingMessage("Failed to load questions. Please try again later.");
     };
 
-    load();
+    if (topic !== null) {
+      load();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [topic]);
+  }, [topic, subtopic]);
 
-  const shuffleArray = (arr) => arr.sort(() => Math.random() - 0.5);
-
+  // Avoid double increment on last question
   const handleAnswer = (option) => {
     if (!questions.length) return;
     setSelected(option);
     const isCorrect = option === questions[currentIndex].answer;
-    if (isCorrect) setScore((s) => s + 1);
 
     setTimeout(() => {
       if (currentIndex + 1 < questions.length) {
+        if (isCorrect) setScore((s) => s + 1);
         setCurrentIndex((i) => i + 1);
         setSelected(null);
       } else {
-        const finalScore = score + (isCorrect ? 1 : 0);
-        setFinished(true);
-        saveToLeaderboard(finalScore);
+        setScore((prev) => {
+          const finalScore = prev + (isCorrect ? 1 : 0);
+          setFinished(true);
+          saveToLeaderboard(finalScore);
+          return finalScore;
+        });
       }
     }, 700);
   };
@@ -258,7 +499,6 @@ const QuizStart = () => {
   const saveToLeaderboard = (finalScore) => {
     try {
       const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
-      // Try to capture logged-in email for accurate grouping/highlighting
       let email = "";
       try {
         const q = JSON.parse(localStorage.getItem("quizuser") || "null");
@@ -270,7 +510,7 @@ const QuizStart = () => {
         score: finalScore,
         total: questions.length || 0,
         date: new Date().toLocaleString(),
-        topic: topic || "Computer Science",
+        topic: subtopic ? `${topic} - ${subtopic}` : topic || "Computer Science",
         email,
       };
       const updated = [...leaderboard, newEntry];
@@ -297,7 +537,11 @@ const QuizStart = () => {
           className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl p-8 max-w-2xl w-full text-center"
         >
           <div className="mb-4 text-sm font-semibold text-indigo-600">
-            {topic ? `Topic: ${topic}` : "Topic: Computer Science"}
+            {subtopic
+              ? `Topic: ${topic} → ${subtopic}`
+              : topic
+              ? `Topic: ${topic}`
+              : "Topic: Computer Science"}
           </div>
 
           {questions.length > 0 ? (
@@ -352,8 +596,10 @@ const QuizStart = () => {
           <p className="text-4xl font-bold text-indigo-600 mb-4">
             {score} / {questions.length}
           </p>
-          {topic && (
-            <p className="text-sm text-gray-600 mb-6">Topic: {topic}</p>
+          {(topic || subtopic) && (
+            <p className="text-sm text-gray-600 mb-6">
+              Topic: {subtopic ? `${topic} → ${subtopic}` : topic}
+            </p>
           )}
 
           <div className="flex justify-center gap-3">

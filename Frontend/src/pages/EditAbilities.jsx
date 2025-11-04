@@ -112,10 +112,10 @@ const EditAbilities = () => {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
-                  Abilities – Interpersonal Skills
+                  Add Skills
                 </h1>
                 <p className="text-gray-600">
-                  List your key interpersonal skills, such as leadership, communication, and teamwork
+                  List your key  skills, such as react js, programming language, leadership, communication, and teamwork
                 </p>
               </div>
             </div>
@@ -127,7 +127,7 @@ const EditAbilities = () => {
               {/* Skills Input Section */}
               <div className="lg:col-span-2">
                 <div className="flex items-center gap-2 mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">Interpersonal Skills</h2>
+                  <h2 className="text-xl font-semibold text-gray-900">Skills</h2>
                 </div>
 
                 <div className="space-y-4">
@@ -135,14 +135,14 @@ const EditAbilities = () => {
                     <div key={idx} className="flex gap-4 items-start">
                       <div className="flex-1">
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Interpersonal Skill <span className="text-red-500">*</span>
+                          Skill <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
                           value={skill.name}
                           onChange={(e) => handleSkillChange(idx, e.target.value)}
                           className={inputClasses(`skill_${idx}`)}
-                          placeholder="e.g., Leadership, Communication, Teamwork"
+                          placeholder="e.g., React.js, Java, MongoDB"
                         />
                         {errors[`skill_${idx}`] && (
                           <p className="text-red-500 text-sm mt-1">{errors[`skill_${idx}`]}</p>

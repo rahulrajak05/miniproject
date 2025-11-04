@@ -318,7 +318,7 @@ impactful innovations in the agriculture sector.`
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <FaBookOpen className="text-blue-600 text-xl" />
                 </div>
-                <span>Learning</span>
+                <span>Skills</span>
               </div>
               <button
                 onClick={() => handleAdd("Abilities")}
@@ -349,6 +349,10 @@ impactful innovations in the agriculture sector.`
               )}
             </div>
           </div>
+
+
+
+
 
           {/* Projects Section */}
           <div className="h-[420px] flex flex-col border rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow">
@@ -411,7 +415,7 @@ impactful innovations in the agriculture sector.`
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <span className="text-blue-600 text-xl">🏆</span>
                 </div>
-                <span>Recognition</span>
+                <span>Course</span>
               </div>
               <button
                 onClick={() => handleAdd("Recognition")}
@@ -499,6 +503,8 @@ impactful innovations in the agriculture sector.`
               )}
             </div>
           </div>
+
+          
 
           {/* Offerings Section */}
           <div className="h-[420px] flex flex-col border rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow">
@@ -592,6 +598,8 @@ impactful innovations in the agriculture sector.`
               )}
             </div>
           </div>
+
+
 
           {/* Interest and Activities Section */}
           <div className="h-[420px] flex flex-col border rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow">

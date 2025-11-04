@@ -66,15 +66,15 @@ const Registration = () => {
         <div className="flex flex-col justify-center items-center md:w-1/2 bg-gradient-to-b from-gray-900 to-gray-700 text-white p-8">
           <motion.img
             src={logo}
-            alt="University Logo"
+            alt="NEXTSTEP Logo"
             className="w-28 h-28 mb-4 rounded-full shadow-lg"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           />
-          <h1 className="text-3xl font-bold text-center">Pondicherry University</h1>
+          <h1 className="text-3xl font-bold text-center">NEXTSTEP</h1>
           <p className="mt-3 text-gray-300 text-center text-sm">
-            Empowering students to rise higher — join our community of innovators and achievers.
+            Your Pathway to Career Success
           </p>
         </div>
 
