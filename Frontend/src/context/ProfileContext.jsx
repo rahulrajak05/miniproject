@@ -6,6 +6,19 @@ export const useProfile = () => useContext(ProfileContext);
 export const ProfileProvider = ({ children }) => {
   const [informationList, setInformationList] = useState([]);
   const addInformation = (info) => setInformationList((prev) => [...prev, info]);
+  // Update existing information at index; if index is out of range, append
+  const updateInformation = (updatedInfo, index = 0) => {
+    setInformationList((prev) => {
+      const list = [...prev];
+      if (index >= 0 && index < list.length) {
+        list[index] = updatedInfo;
+        return list;
+      }
+      return [...list, updatedInfo];
+    });
+  };
+
+  
 
   const [educationList, setEducationList] = useState([]);
   const addEducation = (edu) => setEducationList((prev) => [...prev, edu]);
@@ -41,6 +54,7 @@ export const ProfileProvider = ({ children }) => {
     <ProfileContext.Provider
       value={{
         informationList,
+        setInformationList,
         addInformation,
         educationList,
         addEducation,

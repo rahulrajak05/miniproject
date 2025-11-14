@@ -116,7 +116,6 @@ const App = () => {
 
                {/* Education */}
             <Route path="/information" element={<Information />} />
-             {/* <Route path="/myprofile" element={<MyProfile />} /> */}
 
             {/* Education */}
             <Route path="/educationsetup" element={<EducationSetup />} />

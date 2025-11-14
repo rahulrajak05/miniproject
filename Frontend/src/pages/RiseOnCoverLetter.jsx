@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-  ChevronDown,
   Download,
   FileText,
   User,
@@ -26,21 +25,67 @@ const cardVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.7 } },
 };
 
+// Utility: quick safe setter (only if current is empty and value exists)
+const setIfEmpty = (setter, currentValue, nextValue) => {
+  if (!currentValue && nextValue) setter(nextValue);
+};
+
+// Utility: split one-line address into street and city/state/zip heuristically
+const splitAddress = (full = "") => {
+  const s = String(full).trim();
+  if (!s) return { street: "", cityzip: "" };
+  // Try split by last comma
+  const parts = s.split(",").map((p) => p.trim());
+  if (parts.length >= 2) {
+    const cityzip = parts.slice(-1)[0];
+    const street = parts.slice(0, -1).join(", ");
+    return { street, cityzip };
+  }
+  // Try zip-like ending
+  const m = s.match(/(.+?)\s+([A-Za-z].*\d{3,6})$/);
+  if (m) return { street: m[1].trim(), cityzip: m[2].trim() };
+  return { street: s, cityzip: "" };
+};
+
+// Utility: parse JD for recipient details
+const parseToFromJD = (jd = "") => {
+  const text = String(jd);
+  // Hiring Manager or contact
+  const hm = text.match(
+    /(Hiring\s*Manager|Recruiter|Talent\s*Acquisition|HR)\s*[:\-]\s*([A-Za-z .,'\-]+)/i
+  );
+  const recipientName = hm ? hm[2].trim() : "";
+
+  // Address line (generic)
+  const addr = text.match(/(?:Address|Office)\s*[:\-]\s*([^\n\r]+)/i);
+  const recipientAddress = addr ? addr[1].trim() : "";
+
+  // Location line
+  const loc =
+    text.match(/Location\s*[:\-]\s*([^\n\r]+)/i) ||
+    text.match(/City\s*[:\-]\s*([^\n\r]+)/i);
+  const recipientCityZip = loc ? loc[1].trim() : "";
+
+  return { recipientName, recipientAddress, recipientCityZip };
+};
+
 const RiseOnCoverLetter = () => {
   const navigate = useNavigate();
 
-  // Sender details
+  // Sender (From) details
   const [senderName, setSenderName] = useState("");
   const [senderEmail, setSenderEmail] = useState("");
   const [senderPhone, setSenderPhone] = useState("");
   const [senderWebsite, setSenderWebsite] = useState("");
+  const [senderAddress, setSenderAddress] = useState(""); // Street/Area
+  const [senderCityZip, setSenderCityZip] = useState(""); // City, State ZIP
 
   // Job and company
   const [profile, setProfile] = useState(""); // your core profile (e.g., MERN Developer)
   const [targetRole, setTargetRole] = useState(""); // role you're applying for
   const [company, setCompany] = useState("");
 
-  // Recipient block (left column, like sample image)
+  // Recipient (To) block
   const [recipientName, setRecipientName] = useState("");
   const [recipientTitle, setRecipientTitle] = useState("Hiring Manager");
   const [recipientAddress, setRecipientAddress] = useState(""); // street, area
@@ -51,19 +96,93 @@ const RiseOnCoverLetter = () => {
   const [touched, setTouched] = useState({});
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedAt, setGeneratedAt] = useState("");
+  const [todayStr, setTodayStr] = useState("");
   const [paragraphs, setParagraphs] = useState([]); // structured body paragraphs
 
   // DOM ref for styled PDF export (html2pdf)
   const coverRef = useRef(null);
 
-  const isInvalid = (field) => !field && touched[field];
-
+  // Autofill FROM (sender) from stored info + userEmail
   useEffect(() => {
+    // Auto fill email from localStorage
     const userEmail = localStorage.getItem("userEmail");
-    if (userEmail) setSenderEmail(userEmail);
+    if (userEmail) setIfEmpty(setSenderEmail, senderEmail, userEmail);
+
+    // Auto fill "From" block from informationList if present
+    try {
+      const infoRaw = localStorage.getItem("informationList");
+      if (infoRaw) {
+        const arr = JSON.parse(infoRaw);
+        const info = Array.isArray(arr) ? arr[0] : null;
+        if (info) {
+          setIfEmpty(setSenderName, senderName, info.fullName);
+          setIfEmpty(setSenderEmail, senderEmail, info.email);
+          setIfEmpty(setSenderPhone, senderPhone, info.phone);
+          if (info.address) {
+            const parts = splitAddress(info.address);
+            setIfEmpty(setSenderAddress, senderAddress, parts.street || info.address);
+            setIfEmpty(setSenderCityZip, senderCityZip, parts.cityzip);
+          }
+          if (info.portfolio) setIfEmpty(setSenderWebsite, senderWebsite, info.portfolio);
+          else if (info.linkedin) setIfEmpty(setSenderWebsite, senderWebsite, info.linkedin);
+        }
+      }
+    } catch (e) {
+      // ignore parse errors
+    }
+
+    // Auto date
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+    const formattedTime = now.toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    setTodayStr(formattedDate);
+    setGeneratedAt(`${formattedDate}, ${formattedTime}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto fill JD if all primary fields are present but JD is empty
+  // Autofill TO (recipient) from last used + JD parsing + company presence
+  useEffect(() => {
+    // 1) From last saved
+    try {
+      const lastToRaw = localStorage.getItem("coverletter_to_last");
+      if (lastToRaw) {
+        const last = JSON.parse(lastToRaw);
+        setIfEmpty(setRecipientName, recipientName, last.recipientName);
+        setIfEmpty(setRecipientTitle, recipientTitle, last.recipientTitle || "Hiring Manager");
+        setIfEmpty(setRecipientAddress, recipientAddress, last.recipientAddress);
+        setIfEmpty(setRecipientCityZip, recipientCityZip, last.recipientCityZip);
+      }
+    } catch (e) {
+      // ignore
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 2) Parse JD when it changes
+  useEffect(() => {
+    if (!jobDescription) return;
+    const parsed = parseToFromJD(jobDescription);
+    if (parsed.recipientName) setIfEmpty(setRecipientName, recipientName, parsed.recipientName);
+    if (parsed.recipientAddress)
+      setIfEmpty(setRecipientAddress, recipientAddress, parsed.recipientAddress);
+    if (parsed.recipientCityZip)
+      setIfEmpty(setRecipientCityZip, recipientCityZip, parsed.recipientCityZip);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobDescription]);
+
+  // 3) If company is set but title blank, default to Hiring Manager
+  useEffect(() => {
+    if (company && !recipientTitle) setRecipientTitle("Hiring Manager");
+  }, [company, recipientTitle]);
+
+  // Auto JD seed
   useEffect(() => {
     if (senderName && senderEmail && profile && targetRole && company && !jobDescription) {
       const autoGenerated = `We are seeking a skilled ${targetRole} at ${company}. The ideal candidate should have expertise in ${profile}, strong analytical skills, and a commitment to continuous improvement.`;
@@ -82,120 +201,110 @@ const RiseOnCoverLetter = () => {
 
     if (senderName && senderEmail && profile && targetRole && company) {
       setIsGenerating(true);
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      await new Promise((resolve) => setTimeout(resolve, 600));
 
-      const now = new Date();
-      const formattedDate = now.toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      });
-      const formattedTime = now.toLocaleTimeString("en-IN", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      setGeneratedAt(`${formattedDate}, ${formattedTime}`);
-
-      // Build body paragraphs to match the reference layout tone
-      const p1 = `I am writing to express my interest in the ${targetRole} position at ${company}. With a strong background in ${profile}, I am confident in my ability to contribute effectively to your team.`;
+      // Build body paragraphs to match the provided sample tone
+      const p1 = `I am writing to express my interest in the ${targetRole} position at ${company}. With a strong background in ${profile}, I am eager to bring my skills and passion to your team.`;
       const p2 =
         jobDescription?.trim()
           ? jobDescription.trim()
-          : `In my previous roles, I have demonstrated a commitment to delivering high-quality outcomes and cross-functional collaboration. I am skilled in problem solving, rapid learning, and applying best practices to ship reliable, maintainable solutions.`;
-      const p3 = `Enclosed is my resume, which provides a detailed overview of my qualifications and experiences. I am confident that my skills align well with the requirements of the ${targetRole} role at ${company}.`;
-      const p4 = `Thank you for considering my application. I would welcome the opportunity to discuss how my skills and experiences make me a strong fit for ${company}.`;
+          : `Throughout my career, I have developed experience in delivering high-quality results, collaborating with cross-functional teams, and applying best practices to build reliable, maintainable solutions. I am confident that my capabilities align with your expectations for this role.`;
+      const p3 = `Enclosed is my resume, which provides a detailed overview of my qualifications and experience. I believe my skills align with the requirements of the ${targetRole} role at ${company} and would enable me to contribute meaningfully.`;
+      const p4 = `I would welcome the opportunity to discuss how my qualifications align with the needs of ${company}. Thank you for your time and consideration. I look forward to hearing from you.`;
 
       setParagraphs([p1, p2, p3, p4]);
       setIsGenerating(false);
+
+      // Persist TO for next time
+      try {
+        localStorage.setItem(
+          "coverletter_to_last",
+          JSON.stringify({
+            recipientName,
+            recipientTitle,
+            recipientAddress,
+            recipientCityZip,
+            company,
+          })
+        );
+      } catch {}
     }
   };
 
- // ...existing imports unchanged...
+  // Robust DOM-to-PDF export
+  const handleDownloadPDF = async () => {
+    if (!coverRef.current) return;
 
-// inside the component, replace your handleDownloadPDF with this:
-const handleDownloadPDF = async () => {
-  if (!coverRef.current) return;
-
-  try {
-    // Use the bundle build (includes html2canvas + jsPDF)
-    const mod = await import("html2pdf.js/dist/html2pdf.bundle.min.js");
-    const html2pdf = mod.default || mod;
-
-    const opt = {
-      margin: [18, 18, 18, 18],
-      filename: `${senderName || "Cover_Letter"}.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
-      jsPDF: { unit: "pt", format: "a4", orientation: "portrait" },
-      pagebreak: { mode: ["css", "legacy"] },
-    };
-
-    await html2pdf().set(opt).from(coverRef.current).save();
-  } catch (err) {
-    console.error("html2pdf error, falling back to jsPDF text export:", err);
     try {
-      // Fallback: simple text export so user still gets a file
-      const { jsPDF } = await import("jspdf");
-      const doc = new jsPDF({ unit: "pt", format: "a4" });
-      const margin = 40;
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const maxWidth = pageWidth - margin * 2;
+      const mod = await import("html2pdf.js/dist/html2pdf.bundle.min.js");
+      const html2pdf = mod.default || mod;
+      const opt = {
+        margin: [18, 18, 18, 18],
+        filename: `${senderName || "Cover_Letter"}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
+        jsPDF: { unit: "pt", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: ["css", "legacy"] },
+      };
+      await html2pdf().set(opt).from(coverRef.current).save();
+    } catch (err) {
+      console.error("html2pdf error, fallback to jsPDF:", err);
+      try {
+        const { jsPDF } = await import("jspdf");
+        const doc = new jsPDF({ unit: "pt", format: "a4" });
+        const margin = 48;
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const maxWidth = pageWidth - margin * 2;
 
-      const header = [
-        (targetRole || "Target Role").toUpperCase(),
-        (senderName || "Your Name").toUpperCase(),
-        [senderPhone ? `T: ${senderPhone}` : null, senderWebsite ? `W: ${senderWebsite}` : null, senderEmail ? `E: ${senderEmail}` : null]
-          .filter(Boolean)
-          .join("  //  "),
-        "",
-      ].join("\n");
+        const header = "Cover Letter";
+        doc.setFont("times", "bold");
+        doc.setFontSize(18);
+        doc.text(header, pageWidth / 2, margin, { align: "center" });
 
-      const leftBlock = [
-        recipientName || "",
-        recipientTitle || "",
-        company || "",
-        recipientAddress || "",
-        recipientCityZip || "",
-        "",
-      ]
-        .filter(Boolean)
-        .join("\n");
+        doc.setFont("times", "normal");
+        doc.setFontSize(11);
 
-      const body = [
-        `DEAR ${(recipientName || "Hiring Manager").toUpperCase()},`,
-        "",
-        ...paragraphs,
-        "",
-        "Thank you,",
-        senderName || "Your Name",
-        [senderEmail, senderPhone].filter(Boolean).join(" · "),
-        "Enclosure",
-      ].join("\n");
+        const fromBlock = [
+          senderName || "Your Name",
+          senderAddress || "Your Address",
+          senderCityZip || "City, State, ZIP Code",
+          senderEmail || "your@email.com",
+          senderPhone || "Your Phone Number",
+          todayStr || "",
+          "",
+        ].join("\n");
 
-      // Write header
-      doc.setFont("times", "bold");
-      doc.setFontSize(12);
-      doc.text(doc.splitTextToSize(header, maxWidth), margin, margin);
+        const toBlock = [
+          recipientName || (recipientTitle ? recipientTitle : "Hiring Manager"),
+          company || "Company Name",
+          recipientAddress || "Company Address",
+          recipientCityZip || "City, State, ZIP Code",
+          "",
+        ].join("\n");
 
-      // Left column block
-      let y = margin + 80;
-      doc.setFont("times", "normal");
-      doc.setFontSize(11);
-      const leftLines = doc.splitTextToSize(leftBlock, 180);
-      doc.text(leftLines, margin, y);
+        const body = [
+          `Dear ${recipientName || "Hiring Manager"},`,
+          "",
+          ...paragraphs,
+          "",
+          "Best Regards,",
+          senderName || "Your Name",
+        ].join("\n");
 
-      // Right column body
-      const rightX = margin + 200;
-      const bodyLines = doc.splitTextToSize(body, pageWidth - rightX - margin);
-      doc.text(bodyLines, rightX, y);
+        let y = margin + 20;
+        doc.text(doc.splitTextToSize(fromBlock, maxWidth), margin, y);
+        y += 90;
+        doc.text(doc.splitTextToSize(toBlock, maxWidth), margin, y);
+        y += 90;
+        doc.text(doc.splitTextToSize(body, maxWidth), margin, y);
 
-      doc.save(`${senderName || "Cover_Letter"}_fallback.pdf`);
-    } catch (fallbackErr) {
-      console.error("Fallback jsPDF also failed:", fallbackErr);
-      alert("Sorry, PDF download failed. Please try again or check the console for details.");
+        doc.save(`${senderName || "Cover_Letter"}_fallback.pdf`);
+      } catch (fallbackErr) {
+        console.error("Fallback jsPDF failed:", fallbackErr);
+        alert("Sorry, PDF download failed. Please try again or check the console for details.");
+      }
     }
-  }
-};
+  };
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-blue-50 pt-20">
@@ -223,10 +332,6 @@ const handleDownloadPDF = async () => {
           <h2 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-orange-600 via-pink-600 to-blue-600 text-transparent bg-clip-text">
             Cover Letter Generator
           </h2>
-          <p className="text-lg md:text-xl text-gray-700 mt-2">
-            Create a modern, ATS-friendly cover letter in the format shown
-          </p>
-          <div className="h-1 w-32 bg-gradient-to-r from-orange-500 to-yellow-400 mx-auto mt-3 rounded-full"></div>
         </div>
 
         {/* Card */}
@@ -239,7 +344,7 @@ const handleDownloadPDF = async () => {
           {/* Header */}
           <div className="bg-gradient-to-r from-orange-500 to-pink-500 p-8 text-white">
             <h1 className="text-3xl md:text-4xl font-bold">Generate Letter</h1>
-            <p className="text-lg opacity-90">Styled like the uploaded sample</p>
+            <p className="text-lg opacity-90">Styled like your uploaded sample</p>
           </div>
 
           {/* Body */}
@@ -250,6 +355,8 @@ const handleDownloadPDF = async () => {
               senderEmail={senderEmail}
               senderPhone={senderPhone}
               senderWebsite={senderWebsite}
+              senderAddress={senderAddress}
+              senderCityZip={senderCityZip}
               profile={profile}
               targetRole={targetRole}
               company={company}
@@ -262,6 +369,8 @@ const handleDownloadPDF = async () => {
               setSenderEmail={setSenderEmail}
               setSenderPhone={setSenderPhone}
               setSenderWebsite={setSenderWebsite}
+              setSenderAddress={setSenderAddress}
+              setSenderCityZip={setSenderCityZip}
               setProfile={setProfile}
               setTargetRole={setTargetRole}
               setCompany={setCompany}
@@ -276,7 +385,7 @@ const handleDownloadPDF = async () => {
               handleSubmit={handleSubmit}
             />
 
-            {/* Preview (Styled like the reference) */}
+            {/* Preview (Formatted like your sample) */}
             <motion.div
               className="bg-gray-50 rounded-2xl p-0 border border-gray-200"
               variants={cardVariants}
@@ -299,73 +408,72 @@ const handleDownloadPDF = async () => {
 
               {paragraphs.length > 0 ? (
                 <div className="bg-white">
-                  {/* The A4-like canvas to export */}
+                  {/* A4 canvas to export – mimics yellow bordered sample */}
                   <div
                     ref={coverRef}
                     className="mx-auto my-6 w-full max-w-[900px] bg-white text-gray-900"
                   >
-                    <div className="px-10 pt-10">
-                      {/* Role smallcaps */}
-                      <div className="tracking-widest text-gray-500 font-semibold"
-                           style={{ fontVariant: "small-caps", letterSpacing: "0.15em" }}>
-                        {targetRole ? targetRole : "Target Role"}
-                      </div>
+                    {/* Yellow top border */}
+                    <div className="h-3 w-full bg-yellow-400" />
 
-                      {/* Big Name */}
-                      <div className="mt-1 text-4xl sm:text-5xl font-extrabold">
-                        {(senderName || "Your Name").toUpperCase()}
-                      </div>
-
-                      {/* Contact line */}
-                      <div className="mt-3 text-sm text-gray-600">
-                        {senderPhone && <>Phone: {senderPhone}{"  "}<span className="opacity-60">|</span>{"  "}</>}
-                        {senderWebsite && <>Website: {senderWebsite}{"  "}<span className="opacity-60">|</span>{"  "}</>}
-                        {senderEmail && <>Email: {senderEmail}</>}
-                      </div>
+                    {/* Title */}
+                    <div className="px-10 pt-8 text-center">
+                      <div className="text-3xl sm:text-4xl font-extrabold">Cover Letter</div>
                     </div>
 
-                    <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-8 px-10 pb-12">
-                      {/* Left column - Recipient block */}
-                      <div className="sm:col-span-1 text-sm text-gray-700">
-                        {(recipientName || recipientTitle || company) && (
-                          <div className="space-y-1">
-                            {recipientName && <div className="font-medium">{recipientName}</div>}
-                            {recipientTitle && <div>{recipientTitle}</div>}
-                            {company && <div>{company}</div>}
-                            {recipientAddress && <div>{recipientAddress}</div>}
-                            {recipientCityZip && <div>{recipientCityZip}</div>}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Right column - Letter body */}
-                      <div className="sm:col-span-2">
-                        {/* Greeting */}
-                        <div className="font-extrabold tracking-wide">
-                          DEAR {recipientName ? recipientName.toUpperCase() : "HIRING MANAGER"},
-                        </div>
-                        <div className="border-t mt-2 mb-4"></div>
-
-                        {/* Body paragraphs */}
-                        <div className="space-y-4 text-[15px] leading-[1.8] text-gray-800 font-serif">
-                          {paragraphs.map((p, i) => (
-                            <p key={i}>{p}</p>
-                          ))}
-                        </div>
-
-                        {/* Closing */}
-                        <div className="mt-6 space-y-1 text-gray-800">
-                          <div>Thank you,</div>
-                          <div className="font-medium">{senderName || "Your Name"}</div>
-                          <div className="text-sm text-gray-600">
-                            {senderEmail || ""}{senderEmail && senderPhone ? " · " : ""}{senderPhone || ""}
-                          </div>
-                          <div className="text-sm text-gray-500">Enclosure</div>
-                          {generatedAt && (
-                            <div className="text-xs text-gray-400 mt-2">Generated on: {generatedAt}</div>
-                          )}
+                    {/* From/To blocks + body */}
+                    <div className="px-10 pt-6 pb-12">
+                      {/* From (auto-filled) */}
+                      <div className="text-[15px] leading-7 text-gray-800">
+                        <div className="whitespace-pre-line">
+{`${senderName || "[Your Name]"}
+${senderAddress || "[Your Address]"}
+${senderCityZip || "[City, State, ZIP Code]"}
+${senderEmail || "[Your Email]"}
+${senderPhone || "[Your Phone Number]"}
+${todayStr || "[Date]"}`}
                         </div>
                       </div>
+
+                      {/* Spacer */}
+                      <div className="h-6" />
+
+                      {/* To (auto-filled) */}
+                      <div className="text-[15px] leading-7 text-gray-800">
+                        <div className="whitespace-pre-line">
+{`${recipientName || "[Hiring Manager’s Name]"}
+${company || "[Company Name]"}
+${recipientAddress || "[Company Address]"}
+${recipientCityZip || "[City, State, ZIP Code]"}`}
+                        </div>
+                      </div>
+
+                      {/* Greeting */}
+                      <div className="mt-6 text-[15px] leading-[1.8] text-gray-800 font-serif">
+                        <p>
+                          Dear {recipientName || "Hiring Manager"},
+                        </p>
+                      </div>
+
+                      {/* Body paragraphs */}
+                      <div className="mt-3 space-y-4 text-[15px] leading-[1.8] text-gray-800 font-serif">
+                        {paragraphs.map((p, i) => (
+                          <p key={i}>{p}</p>
+                        ))}
+                      </div>
+
+                      {/* Closing */}
+                      <div className="mt-6 text-[15px] leading-[1.8] text-gray-800 font-serif">
+                        <p>Best Regards,</p>
+                        <p className="font-medium">{senderName || "Your Name"}</p>
+                      </div>
+
+                      {/* Footer date/time (optional small note) */}
+                      {generatedAt && (
+                        <div className="mt-4 text-xs text-gray-400 italic">
+                          Generated on: {generatedAt}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -403,6 +511,8 @@ const FormSection = ({
   senderEmail,
   senderPhone,
   senderWebsite,
+  senderAddress,
+  senderCityZip,
   profile,
   targetRole,
   company,
@@ -415,6 +525,8 @@ const FormSection = ({
   setSenderEmail,
   setSenderPhone,
   setSenderWebsite,
+  setSenderAddress,
+  setSenderCityZip,
   setProfile,
   setTargetRole,
   setCompany,
@@ -447,7 +559,7 @@ const FormSection = ({
       touched={touched}
       setTouched={setTouched}
       fieldName="senderName"
-      placeholder="e.g. Kai Carter"
+      placeholder="e.g. Your Name"
     />
 
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -461,17 +573,40 @@ const FormSection = ({
         setTouched={setTouched}
         fieldName="senderEmail"
         type="email"
-        placeholder="e.g. kai@example.com"
+        placeholder="e.g. you@example.com"
       />
       <EnhancedInputField
-        label="Your Phone (optional)"
+        label="Your Phone"
         icon={<Phone size={20} />}
         value={senderPhone}
         setValue={setSenderPhone}
         touched={touched}
         setTouched={setTouched}
         fieldName="senderPhone"
-        placeholder="e.g. 678-555-0103"
+        placeholder="e.g. 9876543210"
+      />
+    </div>
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <EnhancedInputField
+        label="Your Address"
+        icon={<MapPin size={20} />}
+        value={senderAddress}
+        setValue={setSenderAddress}
+        touched={touched}
+        setTouched={setTouched}
+        fieldName="senderAddress"
+        placeholder="e.g. Gaya"
+      />
+      <EnhancedInputField
+        label="City, State ZIP"
+        icon={<MapPin size={20} />}
+        value={senderCityZip}
+        setValue={setSenderCityZip}
+        touched={touched}
+        setTouched={setTouched}
+        fieldName="senderCityZip"
+        placeholder="e.g. Patna, Bihar 45678"
       />
     </div>
 
@@ -497,7 +632,7 @@ const FormSection = ({
         touched={touched}
         setTouched={setTouched}
         fieldName="targetRole"
-        placeholder="e.g. General Practitioner / Frontend Developer"
+        placeholder="e.g. Frontend Developer"
       />
       <EnhancedInputField
         label="Company Name"
@@ -508,7 +643,7 @@ const FormSection = ({
         touched={touched}
         setTouched={setTouched}
         fieldName="company"
-        placeholder="e.g. Sydney Mattos MD"
+        placeholder="e.g. Google"
       />
     </div>
 
@@ -540,17 +675,17 @@ const FormSection = ({
     {/* Recipient block */}
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <EnhancedInputField
-        label="Recipient Name (optional)"
+        label="Recipient Name"
         icon={<UserCircle2 size={20} />}
         value={recipientName}
         setValue={setRecipientName}
         touched={touched}
         setTouched={setTouched}
         fieldName="recipientName"
-        placeholder="e.g. Jozi Kos"
+        placeholder="e.g. Sachin Kumar"
       />
       <EnhancedInputField
-        label="Recipient Title (optional)"
+        label="Recipient Title"
         icon={<Briefcase size={20} />}
         value={recipientTitle}
         setValue={setRecipientTitle}
@@ -561,26 +696,28 @@ const FormSection = ({
       />
     </div>
 
-    <EnhancedInputField
-      label="Recipient Address (optional)"
-      icon={<MapPin size={20} />}
-      value={recipientAddress}
-      setValue={setRecipientAddress}
-      touched={touched}
-      setTouched={setTouched}
-      fieldName="recipientAddress"
-      placeholder="e.g. 210 Stars Avenue"
-    />
-    <EnhancedInputField
-      label="City, State ZIP (optional)"
-      icon={<MapPin size={20} />}
-      value={recipientCityZip}
-      setValue={setRecipientCityZip}
-      touched={touched}
-      setTouched={setTouched}
-      fieldName="recipientCityZip"
-      placeholder="e.g. Berkeley, CA 45678"
-    />
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <EnhancedInputField
+        label="Company Address"
+        icon={<MapPin size={20} />}
+        value={recipientAddress}
+        setValue={setRecipientAddress}
+        touched={touched}
+        setTouched={setTouched}
+        fieldName="recipientAddress"
+        placeholder="e.g. Gaya Bihar 823001"
+      />
+      <EnhancedInputField
+        label="City, State ZIP"
+        icon={<MapPin size={20} />}
+        value={recipientCityZip}
+        setValue={setRecipientCityZip}
+        touched={touched}
+        setTouched={setTouched}
+        fieldName="recipientCityZip"
+        placeholder="e.g. Gaya, Bihar 823001"
+      />
+    </div>
 
     {/* JD */}
     <div>

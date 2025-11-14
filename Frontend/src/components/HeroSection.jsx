@@ -63,9 +63,9 @@ const HeroSection = () => {
                 whileTap={{ scale: 0.95 }}
                 className="group bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2"
               >
-                <BookOpen className="w-5 h-5" />
+                {/* <BookOpen className="w-5 h-5" /> */}
                 <span>Start Learning</span>
-                <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                {/* <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" /> */}
               </motion.button>
 
               <motion.button
@@ -73,7 +73,7 @@ const HeroSection = () => {
                 whileTap={{ scale: 0.95 }}
                 className="group bg-white hover:bg-gray-50 text-gray-700 font-semibold px-8 py-4 rounded-xl border-2 border-gray-200 hover:border-gray-300 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2"
               >
-                <PlayCircle className="w-5 h-5 text-indigo-600" />
+                {/* <PlayCircle className="w-5 h-5 text-indigo-600" /> */}
                 <span>Watch Demo</span>
               </motion.button>
             </motion.div>

@@ -64,7 +64,7 @@ const LoginPage = () => {
         >
           {/* Left Side */}
           <div className="md:w-1/2 flex flex-col justify-center items-center p-8 bg-gradient-to-br from-blue-500 to-blue-700 text-white text-center">
-            <img src={logo} alt="Logo" className="w-28 h-28 mb-6 drop-shadow-2xl" />
+            <img src={logo} alt="Logo"  className="w-28 h-28 mb-6 drop-shadow-2xl" />
             <h2 className="text-2xl font-bold mb-4 leading-snug">
               Welcome back! Login to continue.
             </h2>

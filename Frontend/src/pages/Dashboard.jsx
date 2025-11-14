@@ -628,11 +628,11 @@ const Dashboard = () => {
             <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 bg-clip-text text-transparent mb-4">
               Welcome to Pondicherry University
             </h2>
-            <p className="text-xl text-gray-700 font-medium">
+            {/* <p className="text-xl text-gray-700 font-medium">
               Department of Computer Science - Student Career Portal
-            </p>
+            </p> */}
           </motion.div>
-
+  
           {/* Profile Cards */}
           <motion.div
             variants={containerVariants}
